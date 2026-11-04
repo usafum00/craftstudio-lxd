@@ -1,5 +1,5 @@
 # Production Dockerfile for Railway / Render / Cloud Run / Tunnel Deployments
-FROM node:20-bookworm-slim AS base
+FROM node:22-bookworm-slim AS base
 
 # Install build tools for better-sqlite3 and native modules
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -23,7 +23,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # 3. Production runner image
-FROM node:20-bookworm-slim AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
