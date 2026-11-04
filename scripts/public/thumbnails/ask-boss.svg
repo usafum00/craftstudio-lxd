@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="100%" height="100%">
+    <defs>
+      <linearGradient id="ab-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f8fafc" />
+        <stop offset="100%" stop-color="#e2e8f0" />
+      </linearGradient>
+    </defs>
+    <rect width="400" height="225" fill="url(#ab-bg)" />
+    <!-- Whiteboard with sticky notes & chart -->
+    <rect x="70" y="30" width="260" height="150" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+    <line x1="90" y1="140" x2="310" y2="140" stroke="#94a3b8" stroke-width="2"/>
+    <polyline points="95,130 140,100 190,115 240,75 290,60" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+    <rect x="95" y="45" width="28" height="28" rx="2" fill="#fef08a" />
+    <rect x="130" y="45" width="28" height="28" rx="2" fill="#fed7aa" />
+    <rect x="165" y="45" width="28" height="28" rx="2" fill="#bbf7d0" />
+    <!-- Figures talking -->
+    <circle cx="130" cy="150" r="18" fill="#475569"/>
+    <circle cx="270" cy="145" r="20" fill="#334155"/>
+  </svg>

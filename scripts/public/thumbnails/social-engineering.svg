@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="100%" height="100%">
+    <defs>
+      <linearGradient id="se-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0f172a" />
+        <stop offset="50%" stop-color="#1e293b" />
+        <stop offset="100%" stop-color="#334155" />
+      </linearGradient>
+      <linearGradient id="shield-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#38bdf8" />
+        <stop offset="100%" stop-color="#0284c7" />
+      </linearGradient>
+    </defs>
+    <rect width="400" height="225" fill="url(#se-bg)" />
+    <!-- Office Desk & Tech silhouettes -->
+    <rect x="50" y="140" width="300" height="8" rx="4" fill="#475569" opacity="0.6"/>
+    <rect x="130" y="90" width="140" height="90" rx="6" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+    <rect x="140" y="100" width="120" height="70" rx="3" fill="#0f172a"/>
+    <!-- Network Grid & Nodes -->
+    <circle cx="80" cy="70" r="4" fill="#38bdf8" opacity="0.7"/>
+    <circle cx="320" cy="65" r="4" fill="#38bdf8" opacity="0.7"/>
+    <circle cx="200" cy="45" r="5" fill="#38bdf8"/>
+    <line x1="80" y1="70" x2="200" y2="45" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5"/>
+    <line x1="320" y1="65" x2="200" y2="45" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5"/>
+    <line x1="200" y1="45" x2="200" y2="90" stroke="#38bdf8" stroke-width="1.5" opacity="0.6"/>
+    <!-- Shield Icon on Screen -->
+    <path d="M 200 115 L 218 123 C 218 140 200 152 200 152 C 200 152 182 140 182 123 Z" fill="url(#shield-grad)" />
+    <path d="M 195 133 L 199 137 L 207 128" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Person silhouettes -->
+    <circle cx="95" cy="115" r="14" fill="#475569" opacity="0.8"/>
+    <path d="M 75 148 C 75 133 85 130 95 130 C 105 130 115 133 115 148 Z" fill="#475569" opacity="0.8"/>
+    <circle cx="305" cy="115" r="14" fill="#475569" opacity="0.8"/>
+    <path d="M 285 148 C 285 133 295 130 305 130 C 315 130 325 133 325 148 Z" fill="#475569" opacity="0.8"/>
+  </svg>

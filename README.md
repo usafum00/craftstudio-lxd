@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LearnByCraft Authoring Tool
 
-## Getting Started
+> **Your brand. Learning by design.**  
+> *Thoughtfully built. Human by design. Capable. Calm. Crafted.*
 
-First, run the development server:
+LearnByCraft Authoring Tool is a modern, responsive corporate learning course authoring studio and SCORM publishing platform.
+
+## Brand Identity & Aesthetic
+- **Deep Teal (`#115E59`):** Primary brand accent, authoritative, crafted, and calm.
+- **Craft Amber (`#F4B544`):** Creative warmth, fold accents, interactive highlights.
+- **Warm Ivory (`#FAF7F0`):** Soft, human-centered surface card background.
+- **Ink (`#172B35`):** Deep editorial typography and high-contrast dark accents.
+- **Soft Sage (`#DCE8DF`):** Subtle dividers, badge backgrounds, and supportive status indicators.
+
+## Core Capabilities
+- **60+ Modular Blocks:** Text, Statement, Quote, List, Image, Gallery, Video, Audio, Interactive (Accordion, Tabs, Labeled Graphic, Process, Timeline, Flashcard, Scenario Decision Tree), Quizzes (Multiple Choice, Multiple Response, Fill in the Blank, Matching), Surveys, and Embeds.
+- **5 Responsive Viewports:** Live test across Desktop (1200px), Tablet Landscape (1024px), Tablet Portrait (768px), Mobile Landscape (667px), and Mobile Portrait (375px).
+- **Public ID Showcase & Sandbox:** Safe peer exploration with Master Course Deletion Shields, one-click "Duplicate to Sandbox", and Admin PIN (`lxd2026`).
+- **One-Click Peer Review:** Instant share links (`?review=true`) with collapsible real-time ID Feedback Drawer.
+- **Publish & Readiness Gate:** Quality inspection before SCORM 1.2 / SCORM 2004 / Web package export.
+
+## Running Locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+PORT=3001 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Or for production build:
+```bash
+npm run build
+PORT=3001 npm run start
+```

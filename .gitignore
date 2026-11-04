@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# SQLite temporary journal files
+*.db-wal
+*.db-shm
+*.db-journal
+
+# Browser automation session caches
+.flow-session/
+scripts/test-screenshots/

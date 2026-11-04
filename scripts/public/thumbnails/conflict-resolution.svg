@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="100%" height="100%">
+    <defs>
+      <linearGradient id="cr-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1e293b" />
+        <stop offset="100%" stop-color="#475569" />
+      </linearGradient>
+    </defs>
+    <rect width="400" height="225" fill="url(#cr-bg)" />
+    <!-- Modern architectural background window -->
+    <rect x="40" y="25" width="320" height="175" rx="8" fill="#334155" opacity="0.4"/>
+    <line x1="200" y1="25" x2="200" y2="200" stroke="#64748b" stroke-width="2" opacity="0.4"/>
+    <!-- Two people engaged in productive dialogue -->
+    <circle cx="150" cy="100" r="22" fill="#94a3b8" />
+    <path d="M 115 175 C 115 135 130 130 150 130 C 170 130 185 135 185 175 Z" fill="#64748b" />
+    <circle cx="250" cy="100" r="22" fill="#cbd5e1" />
+    <path d="M 215 175 C 215 135 230 130 250 130 C 270 130 285 135 285 175 Z" fill="#94a3b8" />
+    <!-- Bridge / handshake icon above -->
+    <circle cx="200" cy="70" r="18" fill="#ff5722" opacity="0.9"/>
+    <path d="M 192 70 L 198 75 L 208 65" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="none">
+  <!-- Left Column / Pillar -->
+  <!-- Outer Face (Deep Teal #115E59) -->
+  <path d="M25 40 L60 20 L60 115 L25 135 Z" fill="#115E59"/>
+  <!-- Top Face (Lighter Teal #177E77) -->
+  <path d="M25 40 L45 28 L80 48 L60 60 Z" fill="#15756F"/>
+  <!-- Inner Crease / Depth (#0D4C48) -->
+  <path d="M60 60 L80 48 L80 102 L60 115 Z" fill="#0C4441"/>
+
+  <!-- Lower Base Ribbon (L Fold) -->
+  <path d="M25 135 L60 115 L95 135 L60 155 Z" fill="#0D4C48"/>
+  <path d="M60 155 L95 135 L125 118 L90 138 Z" fill="#115E59"/>
+
+  <!-- Right Diagonal Branch / Wing -->
+  <path d="M60 78 L95 58 L125 80 L90 100 Z" fill="#115E59"/>
+  <path d="M90 100 L125 80 L125 118 L90 138 Z" fill="#0E4E4A"/>
+
+  <!-- Amber Fold Tip (Craft Amber #F4B544) -->
+  <path d="M95 58 L115 46 L140 68 L125 80 Z" fill="#F4B544"/>
+  <path d="M115 46 L140 68 L125 76 L102 54 Z" fill="#E5A330"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="100%" height="100%">
+    <defs>
+      <linearGradient id="pm-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1e1b4b" />
+        <stop offset="100%" stop-color="#312e81" />
+      </linearGradient>
+    </defs>
+    <rect width="400" height="225" fill="url(#pm-bg)" />
+    <!-- Modern conference table -->
+    <ellipse cx="200" cy="165" rx="150" ry="35" fill="#4338ca" opacity="0.6"/>
+    <ellipse cx="200" cy="160" rx="145" ry="32" fill="#3730a3"/>
+    <!-- Goal target / Performance metric -->
+    <circle cx="200" cy="75" r="32" fill="#4f46e5" stroke="#818cf8" stroke-width="2"/>
+    <circle cx="200" cy="75" r="22" fill="#3730a3" stroke="#a5b4fc" stroke-width="2"/>
+    <circle cx="200" cy="75" r="10" fill="#ff5722"/>
+    <!-- Growth trajectory -->
+    <path d="M 80 130 Q 140 100 200 75 T 320 40" fill="none" stroke="#38bdf8" stroke-width="3" stroke-dasharray="4,4"/>
+  </svg>

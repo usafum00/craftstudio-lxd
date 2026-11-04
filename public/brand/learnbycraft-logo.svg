@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" fill="none">
+  <!-- Mark -->
+  <g transform="translate(10, 5) scale(0.85)">
+    <path d="M20 32 L52 14 L52 98 L20 116 Z" fill="#115E59"/>
+    <path d="M20 32 L36 23 L68 41 L52 50 Z" fill="#14716B" opacity="0.9"/>
+    <path d="M52 50 L68 41 L68 89 L52 98 Z" fill="#0D4C47"/>
+    <path d="M20 116 L52 98 L84 116 L52 134 Z" fill="#0D4C47"/>
+    <path d="M52 134 L84 116 L112 100 L80 118 Z" fill="#115E59"/>
+    <path d="M52 68 L80 52 L102 68 L74 84 Z" fill="#115E59"/>
+    <path d="M74 84 L102 68 L102 100 L74 116 Z" fill="#0D4C47"/>
+    <path d="M80 52 L98 42 L116 58 L102 68 Z" fill="#F4B544"/>
+    <path d="M98 42 L116 58 L108 63 L90 47 Z" fill="#E5A330"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="125" y="62" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="38" font-weight="900" fill="#172B35" letter-spacing="-0.5px">Learn<tspan fill="#115E59">By</tspan>Craft</text>
+  <!-- Subtitle -->
+  <text x="128" y="92" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="800" fill="#115E59" letter-spacing="4px">AUTHORING TOOL</text>
+</svg>

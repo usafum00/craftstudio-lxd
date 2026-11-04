@@ -1,0 +1,6 @@
+node_modules
+.next
+.git
+.flow-session
+*.log
+.env.local
