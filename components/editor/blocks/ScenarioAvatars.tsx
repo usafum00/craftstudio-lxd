@@ -4,7 +4,17 @@ import React from 'react';
 import { Check, MessageSquare, AlertCircle, HelpCircle, ShieldAlert, Sparkles } from 'lucide-react';
 import { WAIST_FADE_MASK_STYLE } from '@/lib/bg-removal';
 
-export type ScenarioExpression = 'neutral' | 'happy' | 'talking' | 'concerned' | 'frustrated';
+export type ScenarioExpression =
+  | 'neutral'
+  | 'happy'
+  | 'talking'
+  | 'concerned'
+  | 'worried'
+  | 'frustrated'
+  | 'disappointed'
+  | 'confused'
+  | 'thinking'
+  | 'presenting';
 
 export interface ScenarioCharacterDef {
   key: string;
@@ -169,52 +179,45 @@ export function ScenarioCharacterFigure({
   characterRole,
   customPhotoUrl,
   expression = 'neutral',
+  framing = 'half_body',
   className = '',
 }: {
   characterName?: string;
   characterRole?: string;
   customPhotoUrl?: string;
   expression?: ScenarioExpression;
+  framing?: 'half_body' | 'full_body';
   className?: string;
 }) {
   const photo = getCharacterPhoto(characterName, customPhotoUrl);
-  const matched = SCENARIO_CHARACTERS.find((c) =>
-    characterName.toLowerCase().includes(c.key)
-  );
-  const displayRole = characterRole || matched?.role || 'Team Lead';
 
   // Detect transparent cutouts
   const isCutout =
     photo.includes('/uploads/characters/') ||
     photo.endsWith('.svg') ||
     photo.includes('cutout') ||
+    photo.includes('_full.png') ||
     (photo.includes('.png') && !photo.includes('unsplash'));
 
   return (
     <div className={`relative flex flex-col items-center justify-end select-none ${className}`}>
       {/* Ground Silhouette Shadow */}
-      <div className="absolute -bottom-4 inset-x-4 h-8 bg-black/60 blur-xl rounded-full pointer-events-none" />
-
-      {/* Expression Badge floating over character's shoulder */}
-      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-        <ScenarioExpressionBadge expression={expression} />
-      </div>
+      <div className="absolute -bottom-2 inset-x-8 h-6 bg-black/70 blur-xl rounded-full pointer-events-none" />
 
       {isCutout ? (
-        /* True Transparent Cutout Figure grounded directly on the stage */
+        /* True Transparent Cutout Figure grounded directly on the stage (NO floating forehead badges or chest boxes) */
         <div className="relative flex flex-col items-center justify-end">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={photo}
             alt={characterName}
-            className="w-auto max-h-[460px] md:max-h-[520px] object-contain drop-shadow-2xl transition-transform duration-300 hover:scale-[1.02]"
-            style={WAIST_FADE_MASK_STYLE}
+            className={`w-auto object-contain drop-shadow-2xl transition-all duration-300 hover:scale-[1.01] ${
+              framing === 'full_body'
+                ? 'max-h-[500px] md:max-h-[560px]'
+                : 'max-h-[440px] md:max-h-[500px]'
+            }`}
+            style={framing === 'full_body' ? undefined : WAIST_FADE_MASK_STYLE}
           />
-          {/* Grounded Floating Identity Pill */}
-          <div className="mt-2 text-center bg-black/50 backdrop-blur-md px-3.5 py-1 rounded-full border border-white/20 shadow-lg">
-            <h4 className="text-xs font-bold text-white tracking-tight">{characterName}</h4>
-            <span className="text-[10px] text-zinc-300 block">{displayRole}</span>
-          </div>
         </div>
       ) : (
         /* Box frame fallback for legacy non-transparent photos */
@@ -225,16 +228,6 @@ export function ScenarioCharacterFigure({
             alt={characterName}
             className="w-full h-full object-cover object-top transition-transform duration-500 hover:scale-105"
           />
-
-          {/* Bottom Stage Ground Gradient Vignette */}
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-transparent flex flex-col justify-end p-4 text-center">
-            <h4 className="text-sm font-bold text-white tracking-tight drop-shadow-md">
-              {characterName}
-            </h4>
-            <span className="text-[11px] text-zinc-300 drop-shadow-xs line-clamp-1">
-              {displayRole}
-            </span>
-          </div>
         </div>
       )}
     </div>

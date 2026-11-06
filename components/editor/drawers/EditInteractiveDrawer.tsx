@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { UnifiedMediaModal } from '@/components/media/UnifiedMediaModal';
 import CharacterPickerModal from '@/components/character/CharacterPickerModal';
+import ScenarioStudioModal from '../modals/ScenarioStudioModal';
 import { DEFAULT_SCENARIO_SCENES } from '../blocks/InteractiveBlock';
 import {
   ScenarioAvatar,
@@ -48,6 +49,7 @@ export function EditInteractiveDrawer({
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(0);
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [characterModalOpen, setCharacterModalOpen] = useState(false);
+  const [scenarioStudioOpen, setScenarioStudioOpen] = useState(false);
   const [mediaModalTarget, setMediaModalTarget] = useState<{
     field: string;
     index?: number;
@@ -1673,6 +1675,30 @@ export function EditInteractiveDrawer({
 
           return (
             <div className="space-y-5">
+              {/* Studio Workspace Banner */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 shadow-xs flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-900">
+                      Full-Screen Scenario Studio
+                    </h4>
+                    <p className="text-[11px] text-zinc-600">
+                      Hierarchical 1.0 Scenes & 1.1 Content Steps with reorder tree and live stage preview.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setScenarioStudioOpen(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-xl shrink-0 shadow-xs transition-all cursor-pointer hover:scale-105 active:scale-95"
+                >
+                  Open Studio
+                </button>
+              </div>
+
               {/* Character & Background Settings */}
               <div className="border border-slate-200 rounded-2xl p-4 bg-white space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
@@ -2619,6 +2645,17 @@ export function EditInteractiveDrawer({
           });
         }}
       />
+
+      {/* Full-Screen Scenario Studio Workspace */}
+      {subtype === 'scenario' && (
+        <ScenarioStudioModal
+          isOpen={scenarioStudioOpen}
+          onClose={() => setScenarioStudioOpen(false)}
+          block={block}
+          onUpdateContent={onUpdateContent}
+          accentColor={accentColor}
+        />
+      )}
     </div>
   );
 }

@@ -233,7 +233,14 @@ export type CharacterGender = 'all' | 'male' | 'female';
 export type CharacterAgeGroup = 'all' | '20s_30s' | '40s_50s' | '60s_plus';
 export type CharacterStyle = 'all' | 'photographic' | 'illustrated';
 export type CharacterCrop = 'all' | 'half_body' | 'full_body' | 'headshot';
-export type CharacterPose = 'neutral' | 'talking' | 'happy' | 'concerned' | 'frustrated' | 'presenting';
+export type CharacterPose =
+  | 'neutral'
+  | 'talking'
+  | 'happy'
+  | 'concerned'
+  | 'frustrated'
+  | 'confused'
+  | 'presenting';
 
 export interface CharacterItem {
   id: string;

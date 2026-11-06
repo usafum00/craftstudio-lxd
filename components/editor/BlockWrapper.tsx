@@ -23,6 +23,7 @@ import { StylePopover } from './popovers/StylePopover';
 import { FormatPopover } from './popovers/FormatPopover';
 import { EditVideoDrawer } from './drawers/EditVideoDrawer';
 import { EditInteractiveDrawer } from './drawers/EditInteractiveDrawer';
+import ScenarioStudioModal from './modals/ScenarioStudioModal';
 import { MagicTransformerPopover } from './MagicTransformerPopover';
 import {
   Pencil,
@@ -79,6 +80,7 @@ export function BlockWrapper({
   const [activePopover, setActivePopover] = useState<'none' | 'style' | 'format'>('none');
   const [videoDrawerOpen, setVideoDrawerOpen] = useState(false);
   const [interactiveDrawerOpen, setInteractiveDrawerOpen] = useState(false);
+  const [scenarioStudioOpen, setScenarioStudioOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [templateName, setTemplateName] = useState('');
@@ -233,7 +235,9 @@ export function BlockWrapper({
     block.category === 'interactive' || block.category === 'knowledge_check';
 
   const handleEditClick = () => {
-    if (isMediaDrawer) {
+    if (isScenario) {
+      setScenarioStudioOpen(true);
+    } else if (isMediaDrawer) {
       setVideoDrawerOpen(true);
     } else if (isInteractiveDrawer) {
       setInteractiveDrawerOpen(true);
@@ -271,12 +275,14 @@ export function BlockWrapper({
     isHovered ||
     activePopover !== 'none' ||
     videoDrawerOpen ||
-    interactiveDrawerOpen;
+    interactiveDrawerOpen ||
+    scenarioStudioOpen;
 
   return (
     <div
       ref={setNodeRef}
       style={style}
+      data-block-id={block.id}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
         setIsHovered(false);
@@ -666,7 +672,7 @@ export function BlockWrapper({
         accentColor={accentColor}
       />
 
-      {/* DRAWER: Interactive (Accordion, Tabs, Scenario, Flashcards, Knowledge Check) */}
+      {/* DRAWER: Interactive (Accordion, Tabs, Flashcards, Knowledge Check) */}
       <EditInteractiveDrawer
         isOpen={interactiveDrawerOpen}
         block={block}
@@ -679,6 +685,17 @@ export function BlockWrapper({
         courseLessons={courseLessons}
         accentColor={accentColor}
       />
+
+      {/* FULL-SCREEN MODAL: Scenario Studio Workspace */}
+      {isScenario && (
+        <ScenarioStudioModal
+          isOpen={scenarioStudioOpen}
+          block={block}
+          onClose={() => setScenarioStudioOpen(false)}
+          onUpdateContent={(newContent) => onUpdateContent(block.id, newContent)}
+          accentColor={accentColor}
+        />
+      )}
 
       {/* MODAL: Save as Custom Template */}
       {showSaveTemplateModal && (

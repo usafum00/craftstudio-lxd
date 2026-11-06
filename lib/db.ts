@@ -2511,6 +2511,9 @@ export function getCreditLogs(limit = 20): CreditLog[] {
 // ==========================================
 
 const SEED_CHARACTERS = [
+  { id: 'char-jet', name: 'Jet', gender: 'male', clothing: 'business_casual', ageGroup: '20s_30s', ethnicity: 'Asian', role: 'Product Success Manager', isAuthenticSet: true },
+  { id: 'char-terri', name: 'Terri', gender: 'female', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'Black', role: 'VP Enterprise Operations', isAuthenticSet: true },
+  { id: 'char-jeremy', name: 'Jeremy', gender: 'male', clothing: 'corporate', ageGroup: '20s_30s', ethnicity: 'White', role: 'Enterprise Strategy Director', isAuthenticSet: true },
   { id: 'char-craig', name: 'Craig', gender: 'male', clothing: 'industry', ageGroup: '20s_30s', ethnicity: 'White', role: 'Safety & Field Operations Lead' },
   { id: 'char-lange', name: 'Lange', gender: 'male', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'Black', role: 'Executive Managing Director' },
   { id: 'char-renita', name: 'Renita', gender: 'female', clothing: 'medical', ageGroup: '20s_30s', ethnicity: 'South Asian', role: 'Lead ER Physician & Trauma Specialist' },
@@ -2547,15 +2550,58 @@ export function seedInitialCharacters(db: Database.Database) {
 
   const now = new Date().toISOString();
   for (const c of SEED_CHARACTERS) {
-    const pngUrl = `/uploads/characters/${c.id}.png`;
-    const expressions = JSON.stringify({
-      neutral: pngUrl,
-      talking: pngUrl,
-      happy: pngUrl,
-      concerned: pngUrl,
-      frustrated: pngUrl,
-      presenting: pngUrl,
-    });
+    let pngUrl = `/uploads/characters/${c.id}.png`;
+    let expressions: string;
+
+    if (c.id === 'char-jet') {
+      pngUrl = '/uploads/characters/jet-neutral-half.png';
+      expressions = JSON.stringify({
+        neutral: '/uploads/characters/jet-neutral-half.png',
+        talking: '/uploads/characters/jet-talking-half.png',
+        happy: '/uploads/characters/jet-happy-half.png',
+        concerned: '/uploads/characters/jet-worried-half.png',
+        worried: '/uploads/characters/jet-worried-half.png',
+        frustrated: '/uploads/characters/jet-frustrated-half.png',
+        confused: '/uploads/characters/jet-confused-half.png',
+        presenting: '/uploads/characters/jet-presenting-half.png',
+      });
+    } else if (c.id === 'char-terri') {
+      pngUrl = '/uploads/characters/terri-neutral-half.png';
+      expressions = JSON.stringify({
+        neutral: '/uploads/characters/terri-neutral-half.png',
+        talking: '/uploads/characters/terri-talking-half.png',
+        happy: '/uploads/characters/terri-happy-half.png',
+        concerned: '/uploads/characters/terri-worried-half.png',
+        worried: '/uploads/characters/terri-worried-half.png',
+        frustrated: '/uploads/characters/terri-frustrated-half.png',
+        confused: '/uploads/characters/terri-confused-half.png',
+        presenting: '/uploads/characters/terri-presenting-half.png',
+      });
+    } else if (c.id === 'char-jeremy' || c.id === 'char-david') {
+      pngUrl = '/uploads/characters/jeremy-neutral-half.png';
+      expressions = JSON.stringify({
+        neutral: '/uploads/characters/jeremy-neutral-half.png',
+        talking: '/uploads/characters/jeremy-talking-half.png',
+        happy: '/uploads/characters/jeremy-happy-half.png',
+        concerned: '/uploads/characters/jeremy-worried-half.png',
+        worried: '/uploads/characters/jeremy-worried-half.png',
+        frustrated: '/uploads/characters/jeremy-frustrated-half.png',
+        confused: '/uploads/characters/jeremy-confused-half.png',
+        presenting: '/uploads/characters/jeremy-presenting-half.png',
+      });
+    } else {
+      expressions = JSON.stringify({
+        neutral: pngUrl,
+        talking: pngUrl,
+        happy: pngUrl,
+        concerned: pngUrl,
+        worried: pngUrl,
+        frustrated: pngUrl,
+        confused: pngUrl,
+        presenting: pngUrl,
+      });
+    }
+
     insert.run(
       c.id,
       c.name,
@@ -2601,6 +2647,7 @@ function mapCharacterRow(row: CharacterDbRow): CharacterItem {
       happy: row.transparent_png_url,
       concerned: row.transparent_png_url,
       frustrated: row.transparent_png_url,
+      confused: row.transparent_png_url,
       presenting: row.transparent_png_url,
     };
   }

@@ -26,12 +26,14 @@ import {
 } from '@/lib/types';
 import { removeBackgroundClient } from '@/lib/bg-removal';
 
-interface CharacterSelectionResult {
+export interface CharacterSelectionResult {
   character: CharacterItem;
   pose: CharacterPose;
   poseUrl: string;
   name: string;
   role?: string;
+  framing?: 'half_body' | 'full_body';
+  expressions?: Record<string, string>;
 }
 
 interface CharacterPickerModalProps {
@@ -39,6 +41,7 @@ interface CharacterPickerModalProps {
   onClose: () => void;
   onSelect: (result: CharacterSelectionResult) => void;
   initialPose?: CharacterPose;
+  initialFraming?: 'half_body' | 'full_body';
 }
 
 const POSE_METADATA: {
@@ -47,12 +50,12 @@ const POSE_METADATA: {
   desc: string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { id: 'neutral', label: 'Neutral', desc: 'Arms crossed, relaxed stance', icon: User },
+  { id: 'neutral', label: 'Neutral', desc: 'Calm, relaxed stance', icon: User },
   { id: 'talking', label: 'Talking', desc: 'Active speaking & explaining', icon: MessageSquare },
-  { id: 'happy', label: 'Happy', desc: 'Smiling, approving & encouraging', icon: Smile },
-  { id: 'concerned', label: 'Concerned / Thinking', desc: 'Reflective, engaged consideration', icon: HelpCircle },
-  { id: 'frustrated', label: 'Frustrated', desc: 'Disapproving, perplexed reaction', icon: Frown },
-  { id: 'presenting', label: 'Presenting', desc: 'Pointing towards content stage', icon: Zap },
+  { id: 'happy', label: 'Happy', desc: 'Warm genuine smile, approving', icon: Smile },
+  { id: 'concerned', label: 'Worried / Concerned', desc: 'Furrowed brow, serious look', icon: HelpCircle },
+  { id: 'frustrated', label: 'Frustrated / Disappointed', desc: 'Frowning, displeased reaction', icon: Frown },
+  { id: 'confused', label: 'Confused / Thinking', desc: 'Tilted head, puzzled consideration', icon: HelpCircle },
 ];
 
 export default function CharacterPickerModal({
@@ -60,6 +63,7 @@ export default function CharacterPickerModal({
   onClose,
   onSelect,
   initialPose = 'neutral',
+  initialFraming = 'half_body',
 }: CharacterPickerModalProps) {
   const [characters, setCharacters] = useState<CharacterItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,10 +72,12 @@ export default function CharacterPickerModal({
   const [genderFilter, setGenderFilter] = useState<CharacterGender>('all');
   const [ageFilter, setAgeFilter] = useState<CharacterAgeGroup>('all');
   const [styleFilter, setStyleFilter] = useState<CharacterStyle>('all');
+  const [cropFilter, setCropFilter] = useState<'all' | 'half_body' | 'full_body'>('all');
 
-  // Step 2: Expression picker state
+  // Step 2: Expression picker state & Framing
   const [selectedChar, setSelectedChar] = useState<CharacterItem | null>(null);
   const [activePose, setActivePose] = useState<CharacterPose>(initialPose);
+  const [selectedFraming, setSelectedFraming] = useState<'half_body' | 'full_body'>(initialFraming);
 
   // AI Generator Panel state
   const [showAiGenerator, setShowAiGenerator] = useState(false);
@@ -135,13 +141,35 @@ export default function CharacterPickerModal({
 
   const handleConfirmPose = (pose: CharacterPose) => {
     if (!selectedChar) return;
-    const poseUrl = selectedChar.expressions?.[pose] || selectedChar.transparentPngUrl;
+    let poseUrl = selectedChar.expressions?.[pose] || selectedChar.transparentPngUrl;
+    if (selectedFraming === 'full_body' && poseUrl.includes('-half.png')) {
+      poseUrl = poseUrl.replace('-half.png', '-full.png');
+    } else if (selectedFraming === 'half_body' && poseUrl.includes('-full.png')) {
+      poseUrl = poseUrl.replace('-full.png', '-half.png');
+    }
+
+    // Resolve expressions dictionary with matching framing
+    const resolvedExpressions: Record<string, string> = {};
+    if (selectedChar.expressions) {
+      for (const [k, v] of Object.entries(selectedChar.expressions)) {
+        let u = v;
+        if (selectedFraming === 'full_body' && u.includes('-half.png')) {
+          u = u.replace('-half.png', '-full.png');
+        } else if (selectedFraming === 'half_body' && u.includes('-full.png')) {
+          u = u.replace('-full.png', '-half.png');
+        }
+        resolvedExpressions[k] = u;
+      }
+    }
+
     onSelect({
       character: selectedChar,
       pose,
       poseUrl,
       name: selectedChar.name,
       role: selectedChar.role,
+      framing: selectedFraming,
+      expressions: resolvedExpressions,
     });
     onClose();
   };
@@ -439,11 +467,16 @@ export default function CharacterPickerModal({
         {selectedChar ? (
           <div className="p-8 overflow-y-auto flex-1 flex flex-col items-center bg-white">
             <div className="flex flex-col md:flex-row items-center gap-8 w-full max-w-3xl mb-8 p-6 bg-zinc-50 rounded-2xl border border-zinc-200">
-              <div className="w-44 h-52 relative flex items-end justify-center overflow-hidden">
+              <div className="w-48 h-60 relative flex items-end justify-center overflow-hidden">
                 <img
-                  src={selectedChar.expressions?.[activePose] || selectedChar.transparentPngUrl}
+                  src={(() => {
+                    let u = selectedChar.expressions?.[activePose] || selectedChar.transparentPngUrl;
+                    if (selectedFraming === 'full_body' && u.includes('-half.png')) u = u.replace('-half.png', '-full.png');
+                    else if (selectedFraming === 'half_body' && u.includes('-full.png')) u = u.replace('-full.png', '-half.png');
+                    return u;
+                  })()}
                   alt={selectedChar.name}
-                  className="max-h-52 object-contain"
+                  className="max-h-60 object-contain"
                 />
               </div>
 
@@ -465,6 +498,35 @@ export default function CharacterPickerModal({
                     Style: Photographic
                   </span>
                 </div>
+
+                {/* Body Framing Switch */}
+                <div className="mt-4 flex items-center gap-3 justify-center md:justify-start">
+                  <span className="text-xs font-bold text-zinc-700">Framing:</span>
+                  <div className="flex rounded-lg border border-zinc-200 p-0.5 bg-white shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedFraming('half_body')}
+                      className={`px-3 py-1 rounded-md text-xs font-semibold cursor-pointer transition-all ${
+                        selectedFraming === 'half_body'
+                          ? 'bg-zinc-900 text-white shadow-xs'
+                          : 'text-zinc-600 hover:text-zinc-900'
+                      }`}
+                    >
+                      Half-Body (Waist-Up)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedFraming('full_body')}
+                      className={`px-3 py-1 rounded-md text-xs font-semibold cursor-pointer transition-all ${
+                        selectedFraming === 'full_body'
+                          ? 'bg-zinc-900 text-white shadow-xs'
+                          : 'text-zinc-600 hover:text-zinc-900'
+                      }`}
+                    >
+                      Full-Body Standing
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -477,7 +539,12 @@ export default function CharacterPickerModal({
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {POSE_METADATA.map((p) => {
                   const isCurrent = activePose === p.id;
-                  const poseUrl = selectedChar.expressions?.[p.id] || selectedChar.transparentPngUrl;
+                  let poseUrl = selectedChar.expressions?.[p.id] || selectedChar.transparentPngUrl;
+                  if (selectedFraming === 'full_body' && poseUrl.includes('-half.png')) {
+                    poseUrl = poseUrl.replace('-half.png', '-full.png');
+                  } else if (selectedFraming === 'half_body' && poseUrl.includes('-full.png')) {
+                    poseUrl = poseUrl.replace('-full.png', '-half.png');
+                  }
 
                   return (
                     <button
@@ -604,6 +671,35 @@ export default function CharacterPickerModal({
                         }`}
                       >
                         <span>{a.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-zinc-900 stroke-[2.5]" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Category 4: Framing */}
+              <div>
+                <h3 className="text-xs font-bold text-zinc-900 mb-2">Framing</h3>
+                <div className="space-y-0.5">
+                  {[
+                    { id: 'all', label: 'All Framing' },
+                    { id: 'half_body', label: 'Half-Body (Waist-Up)' },
+                    { id: 'full_body', label: 'Full-Body Standing' },
+                  ].map((item) => {
+                    const isSelected = cropFilter === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setCropFilter(item.id as any)}
+                        className={`w-full text-left py-1.5 px-2.5 rounded-md text-xs transition-colors flex items-center justify-between cursor-pointer ${
+                          isSelected
+                            ? 'bg-zinc-100 text-zinc-900 font-semibold'
+                            : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                        }`}
+                      >
+                        <span>{item.label}</span>
                         {isSelected && <Check className="w-3.5 h-3.5 text-zinc-900 stroke-[2.5]" />}
                       </button>
                     );

@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
           happy: fallbackUrl,
           concerned: fallbackUrl,
           frustrated: fallbackUrl,
+          confused: fallbackUrl,
           presenting: fallbackUrl,
         },
       });
@@ -120,6 +121,7 @@ export async function POST(request: NextRequest) {
       happy: primaryUrl,
       concerned: primaryUrl,
       frustrated: primaryUrl,
+      confused: primaryUrl,
       presenting: primaryUrl,
     };
 

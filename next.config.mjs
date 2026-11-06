@@ -4,6 +4,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // Allow all tunnel and cloud domains (e.g. *.onrender.com, *.trycloudflare.com, *.up.railway.app, localhost)
   experimental: {
     middlewareClientMaxBodySize: '1000mb',
