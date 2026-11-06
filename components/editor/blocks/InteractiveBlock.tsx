@@ -1298,6 +1298,11 @@ export function InteractiveBlock({
     const activeExpression = currentExpressionOverride || activeScene.expression || 'neutral';
     const characterRole = (content.characterRole as string) || '';
     const customPhotoUrl = (content.characterPhotoUrl as string) || '';
+    const characterExpressions = (content.characterExpressions as Record<string, string>) || null;
+    const resolvedPhotoUrl =
+      characterExpressions && characterExpressions[activeExpression]
+        ? characterExpressions[activeExpression]
+        : customPhotoUrl;
     const scenarioBgUrl = scenarioBg || SCENARIO_ENVIRONMENTS[0].url;
     const activeSceneIndex = Math.max(0, scenarioScenes.findIndex((s) => s.id === activeScene.id));
 
@@ -1324,7 +1329,7 @@ export function InteractiveBlock({
             <ScenarioCharacterFigure
               characterName={scenarioCharacterName}
               characterRole={characterRole}
-              customPhotoUrl={customPhotoUrl}
+              customPhotoUrl={resolvedPhotoUrl}
               expression={activeExpression as ScenarioExpression}
               className="w-full max-w-xs md:max-w-sm"
             />

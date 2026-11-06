@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { UnifiedMediaModal } from '@/components/media/UnifiedMediaModal';
+import CharacterPickerModal from '@/components/character/CharacterPickerModal';
 import { DEFAULT_SCENARIO_SCENES } from '../blocks/InteractiveBlock';
 import {
   ScenarioAvatar,
@@ -46,6 +47,7 @@ export function EditInteractiveDrawer({
 }: EditInteractiveDrawerProps) {
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(0);
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
+  const [characterModalOpen, setCharacterModalOpen] = useState(false);
   const [mediaModalTarget, setMediaModalTarget] = useState<{
     field: string;
     index?: number;
@@ -1682,13 +1684,20 @@ export function EditInteractiveDrawer({
                   </span>
                 </div>
 
-                {/* 1. Character Preset Cast (6 realistic corporate characters) */}
+                {/* 1. Character Cutout Library & Cast */}
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[11px] font-semibold text-gray-700">
-                      Corporate Character Cast
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[11px] font-bold text-gray-800">
+                      Character Cutout (Transparent)
                     </label>
-                    <span className="text-[10px] text-gray-400">6 Personas</span>
+                    <button
+                      type="button"
+                      onClick={() => setCharacterModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-colors shadow-xs"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                      Select Cutout Character (20+ Personas & AI)
+                    </button>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {SCENARIO_CHARACTERS.map((preset) => {
@@ -2593,6 +2602,22 @@ export function EditInteractiveDrawer({
         initialTab="library"
         mediaType={mediaModalTarget?.type || 'image'}
         accentColor={accentColor}
+      />
+
+      {/* Transparent Cutout Character Library & AI Generator Modal */}
+      <CharacterPickerModal
+        isOpen={characterModalOpen}
+        onClose={() => setCharacterModalOpen(false)}
+        onSelect={(result) => {
+          onUpdateContent({
+            ...content,
+            characterName: result.name,
+            characterRole: result.role || content.characterRole,
+            characterPhotoUrl: result.poseUrl,
+            characterPose: result.pose,
+            characterExpressions: result.character.expressions,
+          });
+        }}
       />
     </div>
   );

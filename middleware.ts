@@ -40,8 +40,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 6. Allow read-only GET requests to courses API so review & preview can load course/lesson data
-  if (request.method === 'GET' && pathname.startsWith('/api/courses')) {
+  // 6. Allow read-only GET requests to courses & characters API so review & preview can load course/lesson data
+  if (request.method === 'GET' && (pathname.startsWith('/api/courses') || pathname.startsWith('/api/characters'))) {
     return NextResponse.next();
   }
 

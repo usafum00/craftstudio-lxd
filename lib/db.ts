@@ -1,6 +1,4 @@
 import Database from 'better-sqlite3';
-import path from 'path';
-import fs from 'fs';
 import { getDbPath, ensurePersistentStorageDirs } from './paths';
 import {
   Course,
@@ -15,6 +13,8 @@ import {
   ReviewComment,
   ReviewCommentCategory,
   ReviewCommentStatus,
+  CharacterItem,
+  CharacterPose,
 } from './types';
 
 // Master seeded course IDs that are protected from deletion in public showcase mode
@@ -164,11 +164,28 @@ function initDb(db: Database.Database) {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS characters (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      gender TEXT NOT NULL,
+      clothing TEXT NOT NULL,
+      age_group TEXT NOT NULL,
+      style TEXT NOT NULL DEFAULT 'illustrated',
+      crop TEXT NOT NULL DEFAULT 'half_body',
+      ethnicity TEXT,
+      role TEXT,
+      transparent_png_url TEXT NOT NULL,
+      expressions TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_lessons_course_order ON lessons(course_id, sort_order);
     CREATE INDEX IF NOT EXISTS idx_snapshots_course ON course_snapshots(course_id, created_at);
     CREATE INDEX IF NOT EXISTS idx_media_type_created ON media_assets(file_type, created_at);
     CREATE INDEX IF NOT EXISTS idx_review_comments_course ON review_comments(course_id, created_at);
     CREATE INDEX IF NOT EXISTS idx_credit_logs_created ON credit_logs(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_characters_filters ON characters(clothing, gender, age_group, style);
   `);
 
   // Ensure default row in workspace_credits
@@ -293,6 +310,16 @@ function initDb(db: Database.Database) {
   const mediaCount = db.prepare('SELECT COUNT(*) as count FROM media_assets').get() as { count: number };
   if (mediaCount.count === 0) {
     seedMediaAssets(db);
+  }
+
+  // Check if characters seeded
+  try {
+    const charCount = db.prepare('SELECT COUNT(*) as count FROM characters').get() as { count: number };
+    if (charCount.count === 0) {
+      seedInitialCharacters(db);
+    }
+  } catch (err) {
+    console.warn('Character seeding check error:', err);
   }
 }
 
@@ -2478,5 +2505,205 @@ export function getCreditLogs(limit = 20): CreditLog[] {
   `).all(limit) as CreditLog[];
   return rows;
 }
+
+// ==========================================
+// CHARACTER CUTOUT LIBRARY
+// ==========================================
+
+const SEED_CHARACTERS = [
+  { id: 'char-lange', name: 'Lange', gender: 'male', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'Black', role: 'Executive Managing Director' },
+  { id: 'char-renita', name: 'Renita', gender: 'female', clothing: 'medical', ageGroup: '20s_30s', ethnicity: 'South Asian', role: 'Lead ER Physician & Trauma Specialist' },
+  { id: 'char-jonathan', name: 'Jonathan', gender: 'male', clothing: 'industry', ageGroup: '20s_30s', ethnicity: 'White', role: 'Site Safety Supervisor & Inspector' },
+  { id: 'char-sukiyo', name: 'Sukiyo', gender: 'female', clothing: 'business_casual', ageGroup: '20s_30s', ethnicity: 'Asian', role: 'Senior Financial Risk Analyst' },
+  { id: 'char-gianna', name: 'Gianna', gender: 'female', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'Latina', role: 'Senior Partner & General Legal Counsel' },
+  { id: 'char-laura', name: 'Laura', gender: 'female', clothing: 'casual', ageGroup: '20s_30s', ethnicity: 'White', role: 'Lead UX Designer & Researcher' },
+  { id: 'char-deshaun', name: 'DeShaun', gender: 'male', clothing: 'industry', ageGroup: '40s_50s', ethnicity: 'Black', role: 'Supply Chain & Logistics Plant Director' },
+  { id: 'char-liz', name: 'Liz', gender: 'female', clothing: 'medical', ageGroup: '40s_50s', ethnicity: 'White', role: 'Nurse Practitioner & Clinical Educator' },
+  { id: 'char-jet', name: 'Jet', gender: 'male', clothing: 'casual', ageGroup: '20s_30s', ethnicity: 'Asian', role: 'Principal Cloud & AI Architect' },
+  { id: 'char-antonio', name: 'Antonio', gender: 'male', clothing: 'corporate', ageGroup: '20s_30s', ethnicity: 'Latino', role: 'Corporate Compliance & Ethics Director' },
+  { id: 'char-amara', name: 'Amara', gender: 'female', clothing: 'business_casual', ageGroup: '20s_30s', ethnicity: 'Black', role: 'Director of People & Culture' },
+  { id: 'char-mateo', name: 'Mateo', gender: 'male', clothing: 'casual', ageGroup: '20s_30s', ethnicity: 'Latino', role: 'Senior Product Manager & Scrum Lead' },
+  { id: 'char-priya', name: 'Priya', gender: 'female', clothing: 'medical', ageGroup: '20s_30s', ethnicity: 'South Asian', role: 'Clinical Research & Pharmacology Lead' },
+  { id: 'char-kofi', name: 'Kofi', gender: 'male', clothing: 'industry', ageGroup: '20s_30s', ethnicity: 'Black', role: 'Senior Field Electrical Engineer' },
+  { id: 'char-chen', name: 'Chen', gender: 'male', clothing: 'corporate', ageGroup: '60s_plus', ethnicity: 'Asian', role: 'Chief Technology Officer & Emeritus VP' },
+  { id: 'char-fatima', name: 'Fatima', gender: 'female', clothing: 'business_casual', ageGroup: '20s_30s', ethnicity: 'Middle Eastern', role: 'Strategic Enterprise Accounts Director' },
+  { id: 'char-soren', name: 'Soren', gender: 'male', clothing: 'industry', ageGroup: '60s_plus', ethnicity: 'White', role: 'Master Plant Engineer & Safety Auditor' },
+  { id: 'char-elena', name: 'Elena', gender: 'female', clothing: 'business_casual', ageGroup: '40s_50s', ethnicity: 'Latina', role: 'Chief Customer Experience Officer' },
+  { id: 'char-devon', name: 'Devon', gender: 'male', clothing: 'business_casual', ageGroup: '20s_30s', ethnicity: 'Black', role: 'Omnichannel Store Operations Lead' },
+  { id: 'char-amina', name: 'Amina', gender: 'female', clothing: 'medical', ageGroup: '60s_plus', ethnicity: 'Middle Eastern', role: 'Chief Medical Officer & Surgery Chair' },
+  { id: 'char-carlos', name: 'Carlos', gender: 'male', clothing: 'medical', ageGroup: '40s_50s', ethnicity: 'Latino', role: 'Anesthesiologist & ICU Department Head' },
+  { id: 'char-tariq', name: 'Tariq', gender: 'male', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'Middle Eastern', role: 'VP of Global Supply Chain & Logistics' },
+  { id: 'char-eleanor', name: 'Eleanor', gender: 'female', clothing: 'corporate', ageGroup: '60s_plus', ethnicity: 'White', role: 'Board Chairperson & Senior Governance Advisor' },
+  { id: 'char-harriet', name: 'Harriet', gender: 'female', clothing: 'business_casual', ageGroup: '40s_50s', ethnicity: 'Black', role: 'Principal Learning & Talent Architect' },
+];
+
+export function seedInitialCharacters(db: Database.Database) {
+  const insert = db.prepare(`
+    INSERT OR REPLACE INTO characters (
+      id, name, gender, clothing, age_group, style, crop, ethnicity, role,
+      transparent_png_url, expressions, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  const now = new Date().toISOString();
+  for (const c of SEED_CHARACTERS) {
+    const expressions = JSON.stringify({
+      neutral: `/uploads/characters/${c.id}.svg`,
+      talking: `/uploads/characters/${c.id}-talking.svg`,
+      happy: `/uploads/characters/${c.id}-happy.svg`,
+      concerned: `/uploads/characters/${c.id}-concerned.svg`,
+      frustrated: `/uploads/characters/${c.id}-frustrated.svg`,
+      presenting: `/uploads/characters/${c.id}-presenting.svg`,
+    });
+    insert.run(
+      c.id,
+      c.name,
+      c.gender,
+      c.clothing,
+      c.ageGroup,
+      'illustrated',
+      'half_body',
+      c.ethnicity,
+      c.role,
+      `/uploads/characters/${c.id}.svg`,
+      expressions,
+      now,
+      now
+    );
+  }
+}
+
+interface CharacterDbRow {
+  id: string;
+  name: string;
+  gender: 'male' | 'female';
+  clothing: 'business_casual' | 'casual' | 'corporate' | 'industry' | 'medical';
+  age_group: '20s_30s' | '40s_50s' | '60s_plus';
+  style: 'photographic' | 'illustrated';
+  crop: 'half_body' | 'full_body' | 'headshot';
+  ethnicity?: string | null;
+  role?: string | null;
+  transparent_png_url: string;
+  expressions: string;
+  created_at: string;
+  updated_at: string;
+}
+
+function mapCharacterRow(row: CharacterDbRow): CharacterItem {
+  let parsedExpressions: Record<CharacterPose, string>;
+  try {
+    parsedExpressions = typeof row.expressions === 'string' ? JSON.parse(row.expressions) : row.expressions;
+  } catch {
+    parsedExpressions = {
+      neutral: row.transparent_png_url,
+      talking: row.transparent_png_url,
+      happy: row.transparent_png_url,
+      concerned: row.transparent_png_url,
+      frustrated: row.transparent_png_url,
+      presenting: row.transparent_png_url,
+    };
+  }
+
+  return {
+    id: row.id,
+    name: row.name,
+    gender: row.gender,
+    clothing: row.clothing,
+    ageGroup: row.age_group,
+    style: row.style,
+    crop: row.crop,
+    ethnicity: row.ethnicity || undefined,
+    role: row.role || undefined,
+    transparentPngUrl: row.transparent_png_url,
+    expressions: parsedExpressions,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function getCharacters(filters?: {
+  clothing?: string;
+  gender?: string;
+  ageGroup?: string;
+  style?: string;
+  search?: string;
+}): CharacterItem[] {
+  const db = getDb();
+  let query = 'SELECT * FROM characters WHERE 1=1';
+  const params: string[] = [];
+
+  if (filters?.clothing && filters.clothing !== 'all') {
+    query += ' AND clothing = ?';
+    params.push(filters.clothing);
+  }
+  if (filters?.gender && filters.gender !== 'all') {
+    query += ' AND gender = ?';
+    params.push(filters.gender);
+  }
+  if (filters?.ageGroup && filters.ageGroup !== 'all') {
+    query += ' AND age_group = ?';
+    params.push(filters.ageGroup);
+  }
+  if (filters?.style && filters.style !== 'all') {
+    query += ' AND style = ?';
+    params.push(filters.style);
+  }
+  if (filters?.search && filters.search.trim()) {
+    query += ' AND (name LIKE ? OR role LIKE ? OR ethnicity LIKE ?)';
+    const term = `%${filters.search.trim()}%`;
+    params.push(term, term, term);
+  }
+
+  query += ' ORDER BY created_at ASC';
+  const rows = db.prepare(query).all(...params) as CharacterDbRow[];
+  return rows.map(mapCharacterRow);
+}
+
+export function getCharacterById(id: string): CharacterItem | null {
+  const db = getDb();
+  const row = db.prepare('SELECT * FROM characters WHERE id = ?').get(id) as CharacterDbRow | undefined;
+  if (!row) return null;
+  return mapCharacterRow(row);
+}
+
+export function createCharacter(char: Omit<CharacterItem, 'createdAt' | 'updatedAt'>): CharacterItem {
+  const db = getDb();
+  const now = new Date().toISOString();
+  const expressionsStr = typeof char.expressions === 'string' ? char.expressions : JSON.stringify(char.expressions);
+
+  db.prepare(`
+    INSERT INTO characters (
+      id, name, gender, clothing, age_group, style, crop, ethnicity, role,
+      transparent_png_url, expressions, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    char.id,
+    char.name,
+    char.gender,
+    char.clothing,
+    char.ageGroup,
+    char.style || 'illustrated',
+    char.crop || 'half_body',
+    char.ethnicity || '',
+    char.role || '',
+    char.transparentPngUrl,
+    expressionsStr,
+    now,
+    now
+  );
+
+  return {
+    ...char,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+export function deleteCharacter(id: string): boolean {
+  const db = getDb();
+  const result = db.prepare('DELETE FROM characters WHERE id = ?').run(id);
+  return result.changes > 0;
+}
+
 
 

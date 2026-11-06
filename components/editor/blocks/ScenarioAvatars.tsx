@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Check, MessageSquare, AlertCircle, HelpCircle, ShieldAlert, Sparkles } from 'lucide-react';
+import { WAIST_FADE_MASK_STYLE } from '@/lib/bg-removal';
 
 export type ScenarioExpression = 'neutral' | 'happy' | 'talking' | 'concerned' | 'frustrated';
 
@@ -182,6 +183,13 @@ export function ScenarioCharacterFigure({
   );
   const displayRole = characterRole || matched?.role || 'Team Lead';
 
+  // Detect transparent cutouts
+  const isCutout =
+    photo.includes('/uploads/characters/') ||
+    photo.endsWith('.svg') ||
+    photo.includes('cutout') ||
+    (photo.includes('.png') && !photo.includes('unsplash'));
+
   return (
     <div className={`relative flex flex-col items-center justify-end select-none ${className}`}>
       {/* Ground Silhouette Shadow */}
@@ -192,25 +200,43 @@ export function ScenarioCharacterFigure({
         <ScenarioExpressionBadge expression={expression} />
       </div>
 
-      {/* Grounded Character Cutout Frame */}
-      <div className="relative w-56 sm:w-64 md:w-72 aspect-[3/4] max-h-[480px] rounded-t-3xl overflow-hidden border-t-2 border-x-2 border-white/30 shadow-2xl bg-gradient-to-t from-black/80 via-transparent to-transparent">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={photo}
-          alt={characterName}
-          className="w-full h-full object-cover object-top transition-transform duration-500 hover:scale-105"
-        />
-
-        {/* Bottom Stage Ground Gradient Vignette */}
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-transparent flex flex-col justify-end p-4 text-center">
-          <h4 className="text-sm font-bold text-white tracking-tight drop-shadow-md">
-            {characterName}
-          </h4>
-          <span className="text-[11px] text-zinc-300 drop-shadow-xs line-clamp-1">
-            {displayRole}
-          </span>
+      {isCutout ? (
+        /* True Transparent Cutout Figure grounded directly on the stage */
+        <div className="relative flex flex-col items-center justify-end">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photo}
+            alt={characterName}
+            className="w-auto max-h-[460px] md:max-h-[520px] object-contain drop-shadow-2xl transition-transform duration-300 hover:scale-[1.02]"
+            style={WAIST_FADE_MASK_STYLE}
+          />
+          {/* Grounded Floating Identity Pill */}
+          <div className="mt-2 text-center bg-black/50 backdrop-blur-md px-3.5 py-1 rounded-full border border-white/20 shadow-lg">
+            <h4 className="text-xs font-bold text-white tracking-tight">{characterName}</h4>
+            <span className="text-[10px] text-zinc-300 block">{displayRole}</span>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Box frame fallback for legacy non-transparent photos */
+        <div className="relative w-56 sm:w-64 md:w-72 aspect-[3/4] max-h-[480px] rounded-t-3xl overflow-hidden border-t-2 border-x-2 border-white/30 shadow-2xl bg-gradient-to-t from-black/80 via-transparent to-transparent">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photo}
+            alt={characterName}
+            className="w-full h-full object-cover object-top transition-transform duration-500 hover:scale-105"
+          />
+
+          {/* Bottom Stage Ground Gradient Vignette */}
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-transparent flex flex-col justify-end p-4 text-center">
+            <h4 className="text-sm font-bold text-white tracking-tight drop-shadow-md">
+              {characterName}
+            </h4>
+            <span className="text-[11px] text-zinc-300 drop-shadow-xs line-clamp-1">
+              {displayRole}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

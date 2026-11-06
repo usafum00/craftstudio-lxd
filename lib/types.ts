@@ -228,4 +228,28 @@ export interface ReviewComment {
   updatedAt: string;
 }
 
+export type CharacterClothing = 'all' | 'business_casual' | 'casual' | 'corporate' | 'industry' | 'medical';
+export type CharacterGender = 'all' | 'male' | 'female';
+export type CharacterAgeGroup = 'all' | '20s_30s' | '40s_50s' | '60s_plus';
+export type CharacterStyle = 'all' | 'photographic' | 'illustrated';
+export type CharacterCrop = 'all' | 'half_body' | 'full_body' | 'headshot';
+export type CharacterPose = 'neutral' | 'talking' | 'happy' | 'concerned' | 'frustrated' | 'presenting';
+
+export interface CharacterItem {
+  id: string;
+  name: string;
+  gender: 'male' | 'female';
+  clothing: 'business_casual' | 'casual' | 'corporate' | 'industry' | 'medical';
+  ageGroup: '20s_30s' | '40s_50s' | '60s_plus';
+  style: 'photographic' | 'illustrated';
+  crop: 'half_body' | 'full_body' | 'headshot';
+  ethnicity?: string;
+  role?: string;
+  transparentPngUrl: string;
+  expressions: Record<CharacterPose, string>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
 
