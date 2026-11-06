@@ -385,14 +385,20 @@ export default function LessonEditorPage({
     } else if (category === 'code') {
       if (subtype === 'code_embed') {
         initialContent = {
-          htmlCode: `<div style="font-family: sans-serif; text-align: center; padding: 2rem; background: #0f172a; color: white; border-radius: 12px;">\n  <h2 style="color: #38bdf8; margin-bottom: 0.5rem;">Interactive Security Widget</h2>\n  <p style="color: #94a3b8; font-size: 14px;">This custom embed runs in a safe sandboxed iframe environment.</p>\n  <button onclick="alert('Simulation: Unauthorized access blocked!')" style="background: #ff5722; color: white; border: none; padding: 10px 20px; border-radius: 99px; font-weight: bold; cursor: pointer; margin-top: 1rem;">\n    Test Defense Trigger\n  </button>\n</div>`,
+          htmlCode: `<div style="font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 2.5rem 1.5rem; background: linear-gradient(135deg, #090d16 0%, #1e293b 100%); color: white; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);"><div style="display: inline-block; padding: 6px 14px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 99px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #38bdf8; margin-bottom: 12px;">⚡ Interactive Simulation</div><h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">Real-Time Threat Detection Sandbox</h2><p style="color: #94a3b8; font-size: 14px; max-width: 440px; margin: 0 auto 1.5rem; line-height: 1.5;">Click the trigger to simulate an automated security protocol defense reaction.</p><button onclick="document.getElementById('result').innerText = '🛡️ Defense Triggered: Malicious payload quarantined successfully!'; this.style.transform='scale(0.96)';" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; border: none; padding: 12px 28px; border-radius: 99px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4);">Simulate Threat Attack</button><div id="result" style="margin-top: 18px; font-size: 13px; font-weight: 600; color: #4ade80; min-height: 20px;"></div></div>`,
+          height: 480,
         };
+        initialSettings.contentWidth = 'L';
+        initialSettings.iframeHeight = 480;
       } else if (subtype === 'code_web_project') {
         initialContent = {
           projectUrl: '',
           projectFileName: '',
           projectFilesCount: 0,
+          height: 560,
         };
+        initialSettings.contentWidth = 'L';
+        initialSettings.iframeHeight = 560;
       } else {
         initialContent = {
           language: 'javascript',

@@ -1338,7 +1338,10 @@ export default function CourseReviewPage({
 
                       const isGallery = block.category === 'gallery';
                       const isScenario = block.category === 'interactive' && block.subtype === 'scenario';
-                      const defaultWidthMode = isGallery || isScenario ? 'L' : 'M';
+                      const isCodeApp =
+                        block.category === 'code' &&
+                        (block.subtype === 'code_embed' || block.subtype === 'code_web_project' || block.subtype === 'upload_project');
+                      const defaultWidthMode = isGallery || isScenario || isCodeApp ? 'L' : 'M';
                       const widthMode = (block.settings?.contentWidth ||
                         block.settings?.width ||
                         defaultWidthMode) as 'S' | 'M' | 'L' | 'full';
@@ -1348,7 +1351,7 @@ export default function CourseReviewPage({
                           ? 'max-w-2xl mx-auto px-4 sm:px-6'
                           : widthMode === 'full'
                           ? 'w-full px-0 sm:px-4'
-                          : widthMode === 'L' || isGallery || isScenario
+                          : widthMode === 'L' || isGallery || isScenario || isCodeApp
                           ? 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8'
                           : 'max-w-3xl mx-auto px-4 sm:px-6';
 
@@ -1430,7 +1433,20 @@ export default function CourseReviewPage({
                               />
                             )}
                             {block.category === 'code' && (
-                              <CodeBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                              <CodeBlock
+                                block={block}
+                                onChange={() => {}}
+                                accentColor={accentColor}
+                                isLearnerMode={true}
+                                onComplete={() => {
+                                  if (activeLesson && activeLesson.blocks) {
+                                    const nextB = activeLesson.blocks[idx + 1];
+                                    if (nextB && nextB.category === 'divider' && nextB.subtype === 'continue_button') {
+                                      handleUnlockContinue(nextB.id);
+                                    }
+                                  }
+                                }}
+                              />
                             )}
                             {block.category === 'interactive' && (
                               <InteractiveBlock

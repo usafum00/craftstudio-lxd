@@ -211,7 +211,10 @@ export function BlockWrapper({
   const isDark = isBlockDark(block.settings);
 
   // Layer 3: Inner Stage Width Mapping
-  const defaultWidthMode = isGallery || isScenario ? 'L' : 'M';
+  const isCodeApp =
+    block.category === 'code' &&
+    (block.subtype === 'code_embed' || block.subtype === 'code_web_project' || block.subtype === 'upload_project');
+  const defaultWidthMode = isGallery || isScenario || isCodeApp ? 'L' : 'M';
   const widthMode = (block.settings?.contentWidth ||
     block.settings?.width ||
     defaultWidthMode) as 'S' | 'M' | 'L' | 'full';
@@ -221,7 +224,7 @@ export function BlockWrapper({
       ? 'max-w-2xl mx-auto px-4 sm:px-6'
       : widthMode === 'full'
       ? 'w-full px-0 sm:px-4'
-      : widthMode === 'L' || isGallery || isScenario
+      : widthMode === 'L' || isGallery || isScenario || isCodeApp
       ? 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8'
       : 'max-w-3xl mx-auto px-4 sm:px-6';
 
@@ -587,6 +590,7 @@ export function BlockWrapper({
               block={block}
               onChange={(newContent) => onUpdateContent(block.id, newContent)}
               accentColor={accentColor}
+              onOpenEdit={() => onOpenSettings(block.id, 'content')}
             />
           )}
 

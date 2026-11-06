@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA REVIEW — Conflict dialogue — Nov 2 - SCORM 1.2 Course Player</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="scorm-api-wrapper.js"></script>
+  <script src="course-data.js"></script>
+</head>
+<body>
+  <aside>
+    <div class="brand">
+      
+      <h1>QA REVIEW — Conflict dialogue — Nov 2</h1>
+      <span>ModuForge &bull; SCORM 1.2 Certified</span>
+    </div>
+    <nav id="nav">
+      <div class="nav-item active" onclick="switchTab('video')">1. Interactive Video Lesson</div>
+      <div class="nav-item" onclick="switchTab('modules')">2. Microlearning Units</div>
+      <div class="nav-item" onclick="switchTab('simulation')">3. Branching Roleplay</div>
+      <div class="nav-item" onclick="switchTab('jobaid')">4. 1-Page Job Aid</div>
+      <div class="nav-item" onclick="switchTab('quiz')">5. Graded Assessment</div>
+    </nav>
+    <div class="progress-container">
+      <div style="display:flex; justify-content:space-between; color:#94a3b8; font-weight:600; font-size:11px;">
+        <span>Activity Progress</span>
+        <span id="progress-text">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="progress-fill" class="progress-bar-fill"></div>
+      </div>
+    </div>
+    <div class="lms-status">
+      <div class="status-dot"></div>
+      <span id="lms-indicator">Initializing LMS Connection...</span>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <!-- Populated by JavaScript -->
+  </main>
+
+  <script>
+    var currentTab = 'video';
+    var sceneIndex = 0;
+    var simNodeIndex = 0;
+    var simScore = 50;
+    var quizAnswers = {};
+    var quizSubmitted = false;
+
+    var progressState = {
+      completedModules: {},
+      reviewedCallouts: {},
+      simulationCompleted: false,
+      simulationScore: 50,
+      quizPassed: false,
+      quizScore: 0,
+      quizAnswers: {},
+    };
+
+    function calculateProgress() {
+      var totalMods = COURSE_DATA.moduleOutline.modules.length;
+      var completedCount = Object.keys(progressState.completedModules).filter(function(k) {
+        return progressState.completedModules[k];
+      }).length;
+
+      var totalCallouts = 0;
+      COURSE_DATA.moduleOutline.modules.forEach(function(m) {
+        if (m.expandableCallouts) totalCallouts += m.expandableCallouts.length;
+      });
+      var reviewedCallouts = Object.keys(progressState.reviewedCallouts).length;
+
+      var p = 0;
+      if (totalMods > 0) {
+        var modWeight = totalCallouts > 0 ? 40 : 50;
+        p += Math.round((completedCount / totalMods) * modWeight);
+      }
+      if (totalCallouts > 0) {
+        p += Math.min(10, Math.round((reviewedCallouts / totalCallouts) * 10));
+      }
+      if (progressState.simulationCompleted) {
+        p += 20;
+      }
+      if (progressState.quizPassed) {
+        p += 30;
+      } else if (quizSubmitted) {
+        p += 15;
+      }
+      return Math.min(100, Math.max(0, p));
+    }
+
+    function updateProgressBar() {
+      var pct = calculateProgress();
+      var textEl = document.getElementById("progress-text");
+      var fillEl = document.getElementById("progress-fill");
+      if (textEl) textEl.innerText = pct + "%";
+      if (fillEl) fillEl.style.width = pct + "%";
+    }
+
+    function persistProgress(loc) {
+      ScormSetSuspendData(JSON.stringify(progressState));
+      if (loc) ScormSetLessonLocation(loc);
+      updateProgressBar();
+    }
+
+    window.onload = function() {
+      var connected = ScormProcessInitialize();
+      var indicator = document.getElementById("lms-indicator");
+      if (connected) {
+        indicator.innerText = "LMS Connected (SCORM 1.2)";
+      } else {
+        indicator.innerText = "Standalone / Preview Mode";
+      }
+
+      var rawSuspend = ScormGetSuspendData();
+      if (rawSuspend) {
+        try {
+          var parsed = JSON.parse(rawSuspend);
+          if (parsed && typeof parsed === 'object') {
+            progressState = parsed;
+            quizAnswers = parsed.quizAnswers || {};
+            simScore = parsed.simulationScore || 50;
+            if (parsed.quizPassed || parsed.quizScore > 0) quizSubmitted = true;
+          }
+        } catch (e) {
+          console.warn("[SCORM] Error parsing suspend_data:", e);
+        }
+      }
+
+      var savedLoc = ScormGetLessonLocation();
+      if (savedLoc && ['video', 'modules', 'simulation', 'jobaid', 'quiz'].indexOf(savedLoc) !== -1) {
+        currentTab = savedLoc;
+      }
+
+      var items = document.querySelectorAll('.nav-item');
+      items.forEach(function(item, idx) {
+        var names = ['video', 'modules', 'simulation', 'jobaid', 'quiz'];
+        if (names[idx] === currentTab) item.classList.add('active');
+        else item.classList.remove('active');
+      });
+
+      render();
+      updateProgressBar();
+    };
+
+    function switchTab(tab) {
+      currentTab = tab;
+      persistProgress(tab);
+      var items = document.querySelectorAll('.nav-item');
+      items.forEach(function(item, idx) {
+        var names = ['video', 'modules', 'simulation', 'jobaid', 'quiz'];
+        if (names[idx] === tab) item.classList.add('active');
+        else item.classList.remove('active');
+      });
+      render();
+    }
+
+    function toggleModuleCompletion(modNum) {
+      progressState.completedModules[modNum] = !progressState.completedModules[modNum];
+      persistProgress(currentTab);
+      render();
+    }
+
+    function recordCalloutView(key) {
+      progressState.reviewedCallouts[key] = true;
+      persistProgress(currentTab);
+    }
+
+    function render() {
+      var main = document.getElementById('main-content');
+      if (currentTab === 'video') {
+        var scenes = COURSE_DATA.videoStoryboard.scenes || [];
+        var s = scenes[sceneIndex] || scenes[0] || {};
+        var html = '<h2>Interactive Multimedia Video Lesson</h2>';
+        html += '<p>Scene ' + (sceneIndex + 1) + ' of ' + scenes.length + ' • <strong>' + (s.layoutType || 'split-media').toUpperCase() + '</strong></p>';
+        html += '<div class="video-canvas">';
+        if (s.imageUrl) {
+          html += '<img src="' + s.imageUrl + '" class="video-bg" alt="Scene Visual">';
+        }
+        html += '<div style="position:relative; z-index:2; display:flex; justify-content:space-between; align-items:center;">';
+        html += '<span class="badge badge-indigo">' + (s.layoutType || 'split-media') + '</span>';
+        html += '<span style="font-size:12px; font-weight:bold; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:6px;">Scene ' + (sceneIndex + 1) + ' / ' + scenes.length + '</span>';
+        html += '</div>';
+
+        html += '<div style="position:relative; z-index:2; margin:auto 0;">';
+        html += '<h3 style="font-size:26px; font-weight:800; margin-bottom:12px; color:#ffffff;">' + (s.slideHeadline || '') + '</h3>';
+        
+        if (s.layoutType === 'stat-spotlight') {
+          html += '<div class="stat-metric">' + (s.statMetric || '15 Mins') + '</div>';
+          html += '<p style="color:#e2e8f0; font-size:16px;">' + (s.statLabel || s.slideHeadline) + '</p>';
+        } else if (s.layoutType === 'timeline-steps') {
+          html += '<div style="display:flex; gap:12px;">';
+          (s.bulletPoints || []).slice(0, 3).forEach(function(b, i) {
+            html += '<div class="timeline-card"><strong>Phase ' + (i+1) + '</strong><br>' + b + '</div>';
+          });
+          html += '</div>';
+        } else {
+          html += '<div>';
+          (s.bulletPoints || []).forEach(function(b) {
+            html += '<div style="background:rgba(15,23,42,0.8); padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:13px; color:#e2e8f0;">✓ ' + b + '</div>';
+          });
+          html += '</div>';
+        }
+        html += '</div>';
+
+        if (s.hotspots && s.hotspots.length > 0) {
+          s.hotspots.forEach(function(hs) {
+            html += '<div class="hotspot-pin" style="left:' + hs.xPercent + '%; top:' + hs.yPercent + '%;" onclick="alert(\'[Hotspot: ' + hs.title + ']\\n' + hs.description + '\')">+</div>';
+          });
+        }
+
+        html += '<div style="position:relative; z-index:2; background:rgba(2,6,23,0.85); padding:10px 14px; border-radius:8px; font-size:12px; border:1px solid rgba(99,102,241,0.3);">';
+        html += '<strong>Narration:</strong> &ldquo;' + (s.voiceoverScript || '') + '&rdquo;';
+        html += '</div>';
+        html += '</div>';
+
+        html += '<div style="display:flex; gap:10px; align-items:center; margin-bottom:20px; flex-wrap:wrap;">';
+        html += '<button class="choice-btn" style="width:auto; padding:8px 16px;" onclick="prevScene()" ' + (sceneIndex === 0 ? 'disabled' : '') + '>&larr; Prev Scene</button>';
+        html += '<button class="btn-primary" style="padding:8px 16px;" onclick="speakNarration()">🔊 Speak Narration</button>';
+        html += '<button class="choice-btn" style="width:auto; padding:8px 16px;" onclick="nextScene()" ' + (sceneIndex >= scenes.length - 1 ? 'disabled' : '') + '>Next Scene &rarr;</button>';
+        if (s.checkpoint) {
+          html += '<button class="choice-btn" style="width:auto; padding:8px 16px; background:#fffbeb; color:#b45309;" onclick="triggerCheckpoint(' + sceneIndex + ')">🧠 Micro-Challenge</button>';
+        }
+        html += '<button class="btn-primary" style="margin-left:auto;" onclick="switchTab(\'modules\')">Proceed to Modules &rarr;</button>';
+        html += '</div>';
+        main.innerHTML = html;
+      }
+      else if (currentTab === 'modules') {
+        var html = '<h2>Course Modules (' + COURSE_DATA.moduleOutline.courseDurationMinutes + ' Mins)</h2>';
+        html += '<p>Target Audience: <strong>' + COURSE_DATA.targetAudience + '</strong> | Mode: <strong>' + COURSE_DATA.tone + '</strong></p>';
+        COURSE_DATA.moduleOutline.modules.forEach(function(m) {
+          html += '<div class="content-card">';
+          html += '<span class="badge badge-indigo">Module ' + m.moduleNumber + ' • ' + m.durationMinutes + ' mins</span>';
+          html += '<h3 style="margin: 12px 0 8px;">' + m.title + '</h3>';
+          html += '<p>' + m.summary + '</p>';
+          if (m.keyConcept) {
+            html += '<div style="background:#f1f5f9; padding:12px; border-radius:8px; margin:12px 0; font-size:13px;"><strong>Core Concept:</strong> ' + m.keyConcept + '</div>';
+          }
+          html += '<div style="margin-top:12px;"><strong>Key Takeaways:</strong><ul>';
+          m.keyTakeaways.forEach(function(t) {
+            html += '<li style="margin-left:20px; font-size:13px; margin-top:4px;">' + t + '</li>';
+          });
+          html += '</ul></div>';
+
+          if (m.expandableCallouts && m.expandableCallouts.length > 0) {
+            html += '<div style="margin:12px 0;">';
+            m.expandableCallouts.forEach(function(co, cIdx) {
+              html += '<details ontoggle="recordCalloutView(\'m' + m.moduleNumber + '_co' + cIdx + '\')" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:8px 12px; margin-bottom:6px; cursor:pointer;"><summary style="font-weight:600; font-size:12px; color:#1e293b;">📌 ' + co.title + '</summary><p style="margin-top:6px; font-size:12px; color:#475569;">' + co.detail + '</p></details>';
+            });
+            html += '</div>';
+          }
+
+          if (m.customBlocks && m.customBlocks.length > 0) {
+            html += '<div style="margin-top:16px; border-top:1px dashed #cbd5e1; padding-top:12px;">';
+            html += '<strong style="font-size:12px; text-transform:uppercase; color:#64748b; letter-spacing:0.05em; display:block; margin-bottom:10px;">Interactive Learning Blocks:</strong>';
+            m.customBlocks.forEach(function(b, bIdx) {
+              if (b.type === 'accordion') {
+                html += '<details ontoggle="recordCalloutView(\'m' + m.moduleNumber + '_b' + bIdx + '\')" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; margin-bottom:8px; cursor:pointer;"><summary style="font-weight:600; font-size:13px; color:#0f172a;">📋 ' + (b.title || 'Interactive Step') + '</summary><p style="margin-top:8px; font-size:13px; color:#475569;">' + (b.content || '') + '</p></details>';
+              } else if (b.type === 'callout') {
+                var cBorder = b.calloutType === 'warning' ? '#f59e0b' : b.calloutType === 'tip' ? '#10b981' : 'var(--primary-color)';
+                var cBg = b.calloutType === 'warning' ? '#fffbeb' : b.calloutType === 'tip' ? '#ecfdf5' : '#f8fafc';
+                html += '<div style="border-left:4px solid ' + cBorder + '; background:' + cBg + '; padding:12px; border-radius:6px; margin-bottom:8px; font-size:13px;"><strong>' + (b.calloutType ? b.calloutType.toUpperCase() : 'NOTE') + ': ' + (b.title || '') + '</strong><p style="margin:4px 0 0; color:#334155;">' + (b.content || '') + '</p></div>';
+              } else if (b.type === 'flashcard') {
+                html += '<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; margin-bottom:8px; font-size:13px;"><div style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700;">Scenario Drill</div><strong>' + (b.front || b.title || '') + '</strong><div style="margin-top:6px; padding:8px; background:#f1f5f9; border-radius:6px; color:#1e293b;">💡 ' + (b.back || b.content || '') + '</div></div>';
+              } else if (b.type === 'quiz') {
+                html += '<div style="background:#f8fafc; border:1px solid var(--primary-color); border-radius:8px; padding:14px; margin-bottom:8px; font-size:13px;">';
+                html += '<div style="font-size:11px; font-weight:700; color:var(--primary-color); margin-bottom:4px;">KNOWLEDGE CHECK</div>';
+                html += '<strong>' + (b.question || b.title || '') + '</strong>';
+                if (b.options && b.options.length) {
+                  html += '<div style="margin-top:8px;">';
+                  b.options.forEach(function(opt, oIdx) {
+                    html += '<button class="choice-btn" style="padding:8px 12px; font-size:12px; margin-bottom:4px;" onclick="alert(\'' + (oIdx === (b.correctIndex || 0) ? 'Correct! ' : 'Incorrect. ') + (encodeURIComponent(b.explanation || '')) + '\')">' + opt + '</button>';
+                  });
+                  html += '</div>';
+                }
+                html += '</div>';
+              }
+            });
+            html += '</div>';
+          }
+
+          var isDone = Boolean(progressState.completedModules[m.moduleNumber]);
+          html += '<div style="margin-top:16px; padding-top:12px; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">';
+          html += '<button class="btn-complete-module ' + (isDone ? 'completed' : '') + '" onclick="toggleModuleCompletion(' + m.moduleNumber + ')">' + (isDone ? '✓ Completed Module' : '○ Mark Module Complete') + '</button>';
+          html += '</div>';
+          html += '</div>';
+        });
+        html += '<button class="btn-primary" onclick="switchTab(\'simulation\')">Proceed to Branching Simulation &rarr;</button>';
+        main.innerHTML = html;
+      }
+      else if (currentTab === 'simulation') {
+        var sim = COURSE_DATA.simulation;
+        var node = sim.nodes[simNodeIndex];
+        var html = '<h2>Interactive Branching Scenario: ' + sim.personaName + '</h2>';
+        html += '<p>' + sim.context + '</p>';
+        html += '<div class="content-card" style="border-left: 4px solid #4f46e5;">';
+        html += '<div style="font-size:12px; color:#64748b; margin-bottom:8px;">Persona: <strong>' + sim.personaName + '</strong> (' + sim.personaRole + ') | Score: <strong>' + simScore + '/100</strong></div>';
+        html += '<div style="background:#f8fafc; padding:16px; border-radius:8px; font-style:italic; margin-bottom:16px; font-size:15px;">' + node.characterDialogue + '</div>';
+        html += '<p style="font-weight:600;">' + node.prompt + '</p>';
+        html += '<div style="margin-top:16px;">';
+        node.choices.forEach(function(c, i) {
+          html += '<button class="choice-btn" onclick="makeChoice(' + c.scoreDelta + ', \'' + c.nextNodeId + '\', \'' + encodeURIComponent(c.feedback) + '\')">' + c.text + '</button>';
+        });
+        html += '</div></div>';
+        main.innerHTML = html;
+      }
+      else if (currentTab === 'jobaid') {
+        var ja = COURSE_DATA.jobAid;
+        var html = '<button class="print-btn" onclick="window.print()">Print Job Aid</button>';
+        html += '<h2>' + ja.title + '</h2>';
+        html += '<p><em>When to Use: ' + ja.whenToUse + '</em></p>';
+        var matrix = ja.decisionTable || ja.triageMatrix;
+        if (matrix && matrix.length > 0) {
+          html += '<div class="content-card">';
+          html += '<h3 style="margin-bottom:12px; font-size:15px; font-weight:700;">' + (ja.decisionTableTitle || 'Decision & Protocol Matrix') + '</h3>';
+          html += '<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">';
+          html += '<tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;"><th style="padding:8px;">Scenario / Condition</th><th style="padding:8px;">Classification</th><th style="padding:8px;">Action / Response</th></tr>';
+          matrix.forEach(function(tm) {
+            html += '<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px; font-weight:600;">' + tm.trigger + '</td><td style="padding:8px;"><span class="badge">' + (tm.severity || 'Standard') + '</span></td><td style="padding:8px;">' + tm.action + '</td></tr>';
+          });
+          html += '</table></div>';
+        }
+        html += '<div class="content-card">';
+        html += '<h3 style="margin-bottom:16px; font-size:16px;">Critical Step-by-Step Checklist</h3>';
+        ja.criticalSteps.forEach(function(s) {
+          html += '<div style="display:flex; align-items:start; gap:12px; margin-bottom:12px;">';
+          html += '<input type="checkbox" style="margin-top:4px;">';
+          html += '<div><strong>Step ' + s.stepNumber + ': ' + s.action + '</strong><br><span style="font-size:12px; color:#64748b;">Verification: ' + s.keyCheck + '</span></div>';
+          html += '</div>';
+        });
+        html += '</div>';
+        html += '<div class="content-card" style="display:flex; gap:24px;">';
+        html += '<div style="flex:1;">';
+        html += '<h4 style="color:#047857; margin-bottom:8px;">Protocol DOs:</h4><ul>';
+        ja.dosAndDonts.dos.forEach(function(d) { html += '<li style="margin-left:20px; font-size:13px; margin-bottom:4px;">' + d + '</li>'; });
+        html += '</ul></div>';
+        html += '<div style="flex:1;">';
+        html += '<h4 style="color:#b91c1c; margin-bottom:8px;">Protocol DONTs:</h4><ul>';
+        ja.dosAndDonts.donts.forEach(function(d) { html += '<li style="margin-left:20px; font-size:13px; margin-bottom:4px;">' + d + '</li>'; });
+        html += '</ul></div></div>';
+        html += '<button class="btn-primary" onclick="switchTab(\'quiz\')">Proceed to Final Graded Quiz &rarr;</button>';
+        main.innerHTML = html;
+      }
+      else if (currentTab === 'quiz') {
+        var html = '<h2>Final Graded Knowledge Assessment</h2>';
+        html += '<p>Pass threshold: <strong>80%</strong>. Your score will be transmitted to the LMS.</p>';
+        COURSE_DATA.knowledgeCheck.questions.forEach(function(q, qIdx) {
+          html += '<div class="content-card">';
+          html += '<div style="font-size:12px; font-weight:700; color:#4f46e5; margin-bottom:6px;">Question ' + q.id + ' of 5</div>';
+          html += '<p style="font-weight:600; margin-bottom:14px;">' + q.question + '</p>';
+          ['A', 'B', 'C', 'D'].forEach(function(opt) {
+            var isSelected = quizAnswers[q.id] === opt;
+            var isCorrect = q.correctAnswer === opt;
+            var btnStyle = "choice-btn";
+            if (quizSubmitted) {
+              if (isCorrect) btnStyle += " badge-emerald";
+              else if (isSelected) btnStyle += " badge-amber";
+            } else if (isSelected) {
+              btnStyle += " badge-indigo";
+            }
+            html += '<button class="' + btnStyle + '" onclick="selectQuizOption(' + q.id + ', \'' + opt + '\')">' + opt + ': ' + q.options[opt] + '</button>';
+          });
+          if (quizSubmitted) {
+            html += '<div style="margin-top:12px; background:#eef2ff; padding:12px; border-radius:8px; font-size:13px; color:#312e81;"><strong>Rationale:</strong> ' + q.rationale + '</div>';
+          }
+          html += '</div>';
+        });
+        if (!quizSubmitted) {
+          html += '<button class="btn-primary" onclick="submitQuiz()">Submit Graded Exam to LMS</button>';
+        } else {
+          html += '<div class="content-card" style="text-align:center; background:#ecfdf5; border-color:#a7f3d0;">';
+          html += '<h3 style="color:#065f46; font-size:20px; margin-bottom:8px;">Exam Completed & Submitted</h3>';
+          html += '<p style="color:#047857;">Your score and completion status have been committed to the Learning Management System.</p>';
+          html += '</div>';
+        }
+        main.innerHTML = html;
+      }
+    }
+
+    function makeChoice(delta, nextNodeId, feedbackEncoded) {
+      simScore = Math.max(0, Math.min(100, simScore + delta));
+      var feedback = decodeURIComponent(feedbackEncoded);
+      alert("Feedback: " + feedback + "\nScore delta: " + (delta >= 0 ? "+" + delta : delta) + "\nTotal Score: " + simScore + "/100");
+      if (nextNodeId === 'end' || nextNodeId === 'END') {
+        progressState.simulationCompleted = true;
+        progressState.simulationScore = simScore;
+        persistProgress('simulation');
+        alert("Scenario Complete! Final simulation score: " + simScore + "/100. (+20% course progress recorded)");
+        switchTab('jobaid');
+      } else {
+        var foundIdx = COURSE_DATA.simulation.nodes.findIndex(function(n) { return n.id === nextNodeId; });
+        if (foundIdx !== -1) simNodeIndex = foundIdx;
+        else simNodeIndex = Math.min(simNodeIndex + 1, COURSE_DATA.simulation.nodes.length - 1);
+        render();
+      }
+    }
+
+    function nextScene() {
+      if (sceneIndex < (COURSE_DATA.videoStoryboard.scenes || []).length - 1) {
+        sceneIndex++;
+        render();
+      }
+    }
+
+    function prevScene() {
+      if (sceneIndex > 0) {
+        sceneIndex--;
+        render();
+      }
+    }
+
+    function speakNarration() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        var scenes = COURSE_DATA.videoStoryboard.scenes || [];
+        var s = scenes[sceneIndex];
+        if (s && s.voiceoverScript) {
+          var u = new SpeechSynthesisUtterance(s.voiceoverScript);
+          window.speechSynthesis.speak(u);
+        }
+      } else {
+        alert("Audio narration not supported in this browser.");
+      }
+    }
+
+    function triggerCheckpoint(idx) {
+      var scenes = COURSE_DATA.videoStoryboard.scenes || [];
+      var s = scenes[idx];
+      if (s && s.checkpoint) {
+        var opts = s.checkpoint.options || [];
+        var text = "In-Video Micro-Challenge:\n" + s.checkpoint.question + "\n\n";
+        opts.forEach(function(o, i) {
+          text += (i + 1) + ") " + o + "\n";
+        });
+        text += "\nEnter 1, 2, or 3:";
+        var ans = prompt(text);
+        if (ans) {
+          var num = parseInt(ans, 10) - 1;
+          if (num === s.checkpoint.correctIndex) {
+            alert("✓ Decision Verified!\n" + s.checkpoint.explanation);
+          } else {
+            alert("✕ Deviation Detected.\n" + s.checkpoint.explanation);
+          }
+        }
+      }
+    }
+
+    function selectQuizOption(qId, opt) {
+      if (quizSubmitted) return;
+      quizAnswers[qId] = opt;
+      render();
+    }
+
+    function submitQuiz() {
+      var questions = COURSE_DATA.knowledgeCheck.questions;
+      var correct = 0;
+      questions.forEach(function(q) {
+        if (quizAnswers[q.id] === q.correctAnswer) correct++;
+      });
+      var score = Math.round((correct / questions.length) * 100);
+      var passed = score >= 80;
+      quizSubmitted = true;
+      progressState.quizPassed = passed;
+      progressState.quizScore = score;
+      progressState.quizAnswers = quizAnswers;
+      persistProgress('quiz');
+
+      var totalMods = (COURSE_DATA.moduleOutline && COURSE_DATA.moduleOutline.modules) ? COURSE_DATA.moduleOutline.modules.length : 0;
+      var completedModsCount = (progressState.completedModules && Array.isArray(progressState.completedModules)) ? progressState.completedModules.length : 0;
+      var allModsDone = totalMods > 0 && completedModsCount >= totalMods;
+      var simDone = !!progressState.simulationCompleted;
+      var fullyCompleted = allModsDone && simDone && passed;
+
+      ScormRecordScoreAndStatus(score, fullyCompleted);
+
+      if (fullyCompleted) {
+        alert("Course Completed & Certified!\nScore: " + score + "%\nAll " + totalMods + " modules, simulation, and exam completed. Status 'passed' committed to LMS.");
+      } else if (passed) {
+        alert("Assessment Passed — " + score + "%\n\nRemaining Course Requirements:\n- Complete all " + totalMods + " learning modules (" + completedModsCount + "/" + totalMods + " completed)\n- Complete the practice simulation\n\nComplete all learning modules and the practice simulation to earn full course completion.");
+      } else {
+        alert("Exam Submitted\nScore: " + score + "% (Passing threshold is 80%)\nStatus 'incomplete' recorded. You may review the materials and retake the exam.");
+      }
+      render();
+    }
+  </script>
+</body>
+</html>

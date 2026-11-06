@@ -22,9 +22,6 @@ import {
   Plus,
   Trash2,
   FolderArchive,
-  FileCode,
-  Sliders,
-  CheckCircle2,
 } from 'lucide-react';
 
 interface BlockLibraryDrawerProps {
@@ -104,7 +101,7 @@ export function BlockLibraryDrawer({
     { id: 'survey', label: 'Survey', icon: FileCheck },
     { id: 'chart', label: 'Chart', icon: BarChart2 },
     { id: 'divider', label: 'Divider', icon: Minus },
-    { id: 'code', label: 'Code', icon: Code },
+    { id: 'code', label: 'Code & Custom Apps', icon: Code },
     { id: 'block_templates', label: 'Block templates', icon: LayoutTemplate },
   ];
 
@@ -564,35 +561,95 @@ export function BlockLibraryDrawer({
 
     code: [
       {
-        subtype: 'code_snippet',
-        name: 'Code Snippet',
-        description: 'Syntax-highlighted code container with language picker & copy.',
-        preview: (
-          <div className="p-2.5 bg-slate-900 rounded-lg text-slate-400 font-mono text-[8px] space-y-1">
-            <div className="h-1 bg-sky-400 rounded w-1/3" />
-            <div className="h-1 bg-slate-700 rounded w-2/3" />
-          </div>
-        ),
-      },
-      {
         subtype: 'code_embed',
-        name: 'Add Code (Sandbox)',
-        description: 'Interactive HTML, CSS, and JS editor running inside a secure iframe.',
+        name: 'Custom HTML / AI Interactive App',
+        description:
+          'Paste single-file HTML/CSS/JS to render a live interactive activity. Code stays hidden from learners.',
         preview: (
-          <div className="p-2 bg-white rounded-lg border border-gray-100 flex items-center gap-2">
-            <FileCode className="w-4 h-4 text-sky-600" />
-            <div className="h-2 bg-gray-300 rounded flex-1" />
+          <div
+            style={{ backgroundColor: '#0f172a' }}
+            className="p-3 rounded-xl border border-slate-800 text-white space-y-2 select-none shadow-xs"
+          >
+            <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] font-bold text-sky-300">Live HTML Widget</span>
+              </div>
+              <span className="text-[8px] font-semibold text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded">
+                iframe
+              </span>
+            </div>
+            <div className="h-6 rounded-lg bg-slate-800/90 border border-slate-700/80 flex items-center justify-between px-2">
+              <div className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                <div className="h-1.5 bg-slate-400 rounded w-12" />
+              </div>
+              <div className="px-2 py-0.5 rounded-full bg-sky-500 text-[8px] font-bold text-white shadow-2xs">
+                ▶ Test
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-[8px] text-slate-400 pt-0.5">
+              <span>Code stays hidden</span>
+              <span className="text-emerald-400 font-medium">✓ Clean Canvas</span>
+            </div>
           </div>
         ),
       },
       {
         subtype: 'code_web_project',
-        name: 'Upload Project (.zip)',
-        description: 'Extract and host custom interactive web applications locally.',
+        name: 'Embedded Web / SCORM Package (.zip)',
+        description: 'Upload any .zip web app, Storyline block, or SCORM package.',
         preview: (
-          <div className="p-2 bg-white rounded-lg border border-gray-100 flex items-center gap-2">
-            <FolderArchive className="w-4 h-4 text-indigo-600" />
-            <div className="h-2 bg-gray-300 rounded flex-1" />
+          <div
+            style={{ backgroundColor: '#1e1b4b' }}
+            className="p-3 rounded-xl border border-indigo-900 text-white space-y-2 select-none shadow-xs"
+          >
+            <div className="flex items-center justify-between pb-1 border-b border-indigo-800/60">
+              <div className="flex items-center gap-1.5">
+                <FolderArchive className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="text-[10px] font-bold text-indigo-200">SCORM & Web Zip</span>
+              </div>
+              <span className="text-[8px] font-bold text-indigo-200 bg-indigo-900 border border-indigo-700 px-1.5 py-0.5 rounded">
+                SCORM 1.2
+              </span>
+            </div>
+            <div className="h-6 rounded-lg bg-indigo-950/80 border border-dashed border-indigo-700 flex items-center justify-center gap-1.5 text-indigo-200 text-[9px] font-medium">
+              <span className="w-2 h-2 rounded-full bg-indigo-400" />
+              <span>index.html Player</span>
+            </div>
+            <div className="flex items-center justify-between text-[8px] text-indigo-300 pt-0.5">
+              <span>Storyline / ModuForge</span>
+              <span className="text-indigo-200 font-semibold">⛶ Fullscreen</span>
+            </div>
+          </div>
+        ),
+      },
+      {
+        subtype: 'code_snippet',
+        name: 'Syntax Code Snippet',
+        description: 'Display formatted code lines for technical tutorials.',
+        preview: (
+          <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-100 space-y-1.5 select-none shadow-xs">
+            <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+              <div className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500/80" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500/80" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
+                <span className="text-[9px] font-mono text-slate-400 ml-1">snippet.js</span>
+              </div>
+              <span className="text-[8px] font-mono text-sky-400">Copy</span>
+            </div>
+            <div className="space-y-1 font-mono text-[8px]">
+              <div className="flex items-center gap-1">
+                <span className="text-purple-400">const</span>
+                <span className="text-sky-300">auth</span>
+                <span className="text-slate-400">=</span>
+                <span className="text-amber-300">verify()</span>;
+              </div>
+              <div className="flex items-center gap-1 pl-2">
+                <span className="text-slate-500">{'// Returns bearer token'}</span>
+              </div>
+            </div>
           </div>
         ),
       },
