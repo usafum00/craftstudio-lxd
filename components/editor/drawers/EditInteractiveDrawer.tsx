@@ -17,7 +17,12 @@ import {
 } from 'lucide-react';
 import { UnifiedMediaModal } from '@/components/media/UnifiedMediaModal';
 import { DEFAULT_SCENARIO_SCENES } from '../blocks/InteractiveBlock';
-import { ScenarioAvatar, ScenarioExpression } from '../blocks/ScenarioAvatars';
+import {
+  ScenarioAvatar,
+  ScenarioExpression,
+  SCENARIO_CHARACTERS,
+  SCENARIO_ENVIRONMENTS,
+} from '../blocks/ScenarioAvatars';
 
 interface EditInteractiveDrawerProps {
   isOpen: boolean;
@@ -1670,78 +1675,127 @@ export function EditInteractiveDrawer({
               <div className="border border-slate-200 rounded-2xl p-4 bg-white space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                    Character & Environment
+                    Theatrical Character & Stage
                   </span>
-                  <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                    Vector Avatars
+                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    Rise 3-Layer Stage
                   </span>
                 </div>
 
-                {/* Character Preset Picker */}
+                {/* 1. Character Preset Cast (6 realistic corporate characters) */}
                 <div>
-                  <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
-                    Character Persona & Vector Headshot
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-semibold text-gray-700">
+                      Corporate Character Cast
+                    </label>
+                    <span className="text-[10px] text-gray-400">6 Personas</span>
+                  </div>
                   <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { name: 'Alex (IT Support)', key: 'alex' },
-                      { name: 'Sloane (Manager)', key: 'sloane' },
-                      { name: 'Mentor (Coach)', key: 'mentor' },
-                    ].map((preset) => {
+                    {SCENARIO_CHARACTERS.map((preset) => {
                       const isSelected = characterName.toLowerCase().includes(preset.key);
                       return (
                         <button
                           key={preset.key}
                           type="button"
-                          onClick={() => onUpdateContent({ ...content, characterName: preset.name })}
+                          onClick={() =>
+                            onUpdateContent({
+                              ...content,
+                              characterName: preset.name,
+                              characterRole: preset.role,
+                              characterPhotoUrl: preset.photoUrl,
+                            })
+                          }
                           className={`p-2 rounded-xl border flex flex-col items-center gap-1.5 text-center transition-all cursor-pointer ${
                             isSelected
-                              ? 'border-indigo-600 bg-indigo-50/50 shadow-xs ring-1 ring-indigo-600'
+                              ? 'border-indigo-600 bg-indigo-50/60 shadow-xs ring-2 ring-indigo-500'
                               : 'border-slate-200 hover:border-slate-300 bg-slate-50'
                           }`}
                         >
-                          <ScenarioAvatar
-                            character={preset.key}
-                            expression="neutral"
-                            className="w-10 h-10"
-                            hideBadge
-                          />
-                          <span className="text-[11px] font-bold text-gray-800 leading-tight">
-                            {preset.key.charAt(0).toUpperCase() + preset.key.slice(1)}
-                          </span>
+                          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-xs">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={preset.photoUrl} alt={preset.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="block text-[11px] font-bold text-gray-900 leading-tight truncate">
+                              {preset.name}
+                            </span>
+                            <span className="block text-[9px] text-gray-500 leading-tight truncate">
+                              {preset.role.split('/')[0]}
+                            </span>
+                          </div>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                    Custom Character Label
-                  </label>
-                  <input
-                    type="text"
-                    value={characterName}
-                    onChange={(e) => onUpdateContent({ ...content, characterName: e.target.value })}
-                    className="w-full text-xs px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-gray-900 focus:outline-none focus:border-indigo-500"
-                  />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+                      Character Name
+                    </label>
+                    <input
+                      type="text"
+                      value={characterName}
+                      onChange={(e) => onUpdateContent({ ...content, characterName: e.target.value })}
+                      className="w-full text-xs px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-gray-900 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+                      Role / Department
+                    </label>
+                    <input
+                      type="text"
+                      value={(content.characterRole as string) || ''}
+                      placeholder="e.g. Retail Store Director"
+                      onChange={(e) => onUpdateContent({ ...content, characterRole: e.target.value })}
+                      className="w-full text-xs px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-gray-900 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
                 </div>
 
+                {/* 2. Workplace Environment Backdrop Presets (6 curated environments) */}
                 <div>
-                  <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                    Environment Background Image
-                  </label>
-                  <div className="relative rounded-xl overflow-hidden border border-slate-200 aspect-video mb-2 bg-black shadow-xs">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={bgImage} alt="" className="w-full h-full object-cover" />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-semibold text-gray-700">
+                      Workplace Environment Backdrop
+                    </label>
+                    <span className="text-[10px] text-gray-400">6 Environments</span>
                   </div>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {SCENARIO_ENVIRONMENTS.map((env) => {
+                      const isCurrent = bgImage === env.url;
+                      return (
+                        <button
+                          key={env.id}
+                          type="button"
+                          onClick={() => onUpdateContent({ ...content, backgroundImage: env.url })}
+                          className={`relative aspect-video rounded-xl overflow-hidden border transition-all cursor-pointer ${
+                            isCurrent
+                              ? 'border-indigo-600 ring-2 ring-indigo-500 shadow-sm'
+                              : 'border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100'
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={env.thumb} alt={env.name} className="w-full h-full object-cover" />
+                          <div className="absolute inset-x-0 bottom-0 bg-black/60 px-1 py-0.5 text-center">
+                            <span className="text-[9px] font-bold text-white leading-tight truncate block">
+                              {env.name.split('/')[0]}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
                   <button
                     type="button"
                     onClick={() => openMediaModal('backgroundImage', undefined, 'image')}
-                    className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-gray-800 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl text-xs font-semibold text-indigo-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Change Office / Environment Photo</span>
+                    <span>Browse Media Vault / Upload Custom Scene Photo</span>
                   </button>
                 </div>
               </div>

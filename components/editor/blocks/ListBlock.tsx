@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Block } from '@/lib/types';
+import { isBlockDark } from '@/lib/contrast';
 import { Plus, Trash2, Check, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface ListBlockProps {
@@ -13,6 +14,7 @@ interface ListBlockProps {
 
 export function ListBlock({ block, onChange, accentColor = '#ff5722', isLearnerMode = false }: ListBlockProps) {
   const { subtype, content } = block;
+  const isDark = isBlockDark(block.settings);
 
   const items: string[] = (content.items as string[]) || [
     'Verify sender email headers and domain spelling prior to replying.',
@@ -69,7 +71,7 @@ export function ListBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && onChange({ ...content, title: e.currentTarget.innerText })}
-          className={`font-bold text-sm sm:text-base text-gray-900 rounded p-1 ${
+          className={`font-bold text-sm sm:text-base ${isDark ? 'text-white' : 'text-gray-900'} rounded p-1 ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
         >
@@ -82,7 +84,9 @@ export function ListBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
         {items.map((item, index) => (
           <div
             key={index}
-            className="flex items-start gap-3 group/item rounded-xl p-1.5 hover:bg-gray-50/80 transition-colors"
+            className={`flex items-start gap-3 group/item rounded-xl p-1.5 ${
+              isDark ? 'hover:bg-white/10' : 'hover:bg-gray-50/80'
+            } transition-colors`}
           >
             {/* Left Badge / Icon based on subtype */}
             {subtype === 'numbered_list' && (
@@ -101,6 +105,8 @@ export function ListBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
                 className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 border transition-all cursor-pointer ${
                   checkedMap[index]
                     ? 'border-transparent text-white'
+                    : isDark
+                    ? 'border-zinc-500 bg-zinc-800 hover:border-zinc-400'
                     : 'border-gray-300 bg-white hover:border-gray-400'
                 }`}
                 style={{
@@ -123,8 +129,10 @@ export function ListBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
               contentEditable={!isLearnerMode}
               suppressContentEditableWarning
               onBlur={(e) => !isLearnerMode && handleUpdateItem(index, e.currentTarget.innerText)}
-              className={`flex-1 text-xs sm:text-sm text-gray-800 leading-relaxed rounded px-1.5 py-0.5 ${
-                checkedMap[index] && subtype === 'checkbox_list' ? 'line-through text-gray-400' : ''
+              className={`flex-1 text-xs sm:text-sm ${
+                isDark ? 'text-zinc-200' : 'text-gray-800'
+              } leading-relaxed rounded px-1.5 py-0.5 ${
+                checkedMap[index] && subtype === 'checkbox_list' ? 'line-through opacity-50' : ''
               } ${isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'}`}
             >
               {item}

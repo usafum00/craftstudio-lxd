@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Block, Lesson } from '@/lib/types';
 import { SimulationLabBlock } from './SimulationLabBlock';
-import { ScenarioAvatar, ScenarioExpression } from './ScenarioAvatars';
+import { ScenarioCharacterFigure, ScenarioAvatar, ScenarioExpression, SCENARIO_ENVIRONMENTS } from './ScenarioAvatars';
 import {
   Plus,
   Minus,
@@ -1292,97 +1292,133 @@ export function InteractiveBlock({
     );
   }
 
-  // 8. SCENARIO (Storyline-Style Branching Conversation)
+  // 8. SCENARIO (Articulate Rise-Style Theatrical Stage)
   if (subtype === 'scenario') {
     const isDialogue = activeScene.type === 'dialogue';
     const activeExpression = currentExpressionOverride || activeScene.expression || 'neutral';
+    const characterRole = (content.characterRole as string) || '';
+    const customPhotoUrl = (content.characterPhotoUrl as string) || '';
+    const scenarioBgUrl = scenarioBg || SCENARIO_ENVIRONMENTS[0].url;
+    const activeSceneIndex = Math.max(0, scenarioScenes.findIndex((s) => s.id === activeScene.id));
 
     return (
-      <div className="w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-slate-900 select-none relative">
-        {/* Background Environment Image with Scrim */}
+      <div className="w-full rounded-3xl overflow-hidden shadow-2xl bg-zinc-950 border border-zinc-800/80 select-none relative min-h-[540px] md:min-h-[580px] flex flex-col justify-end">
+        {/* Layer 1: High-Resolution Full-Bleed Environment Backdrop */}
         <div className="absolute inset-0 z-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={scenarioBg} alt="" className="w-full h-full object-cover opacity-35" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent" />
+          <img
+            src={scenarioBgUrl}
+            alt="Workplace Environment"
+            className="w-full h-full object-cover object-center filter brightness-[0.78] contrast-[1.05]"
+          />
+          {/* Subtle Depth-of-field blur & lighting scrim */}
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-black/25 backdrop-blur-[1.5px]" />
+          {/* Floor Shadow for Character Grounding */}
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-zinc-950 to-transparent" />
         </div>
 
-        {/* Scenario Content Container */}
-        <div className="relative z-10 p-6 sm:p-10 flex flex-col md:flex-row items-center md:items-end gap-6 sm:gap-8 min-h-[460px]">
-          {/* Character Portrait & Reaction Expression */}
-          <div className="flex flex-col items-center flex-shrink-0">
-            <ScenarioAvatar
+        {/* Layer 2: Theatrical Stage Layout (Character on Left + Floating Card on Right) */}
+        <div className="relative z-10 w-full flex flex-col md:flex-row items-center md:items-end justify-between gap-6 p-6 sm:p-10 pt-10 min-h-[540px] md:min-h-[580px]">
+          {/* Left Character Stage: Realistic Cutout Figure Grounded to Floor */}
+          <div className="w-full md:w-5/12 flex justify-center md:justify-start md:pl-6 self-end z-10">
+            <ScenarioCharacterFigure
+              characterName={scenarioCharacterName}
+              characterRole={characterRole}
+              customPhotoUrl={customPhotoUrl}
               expression={activeExpression as ScenarioExpression}
-              character={scenarioCharacterName}
-              className="w-24 h-24 sm:w-28 sm:h-28"
+              className="w-full max-w-xs md:max-w-sm"
             />
-            <span className="font-bold text-xs text-white mt-2.5 drop-shadow-md tracking-tight">{scenarioCharacterName}</span>
           </div>
 
-          {/* Dialogue & Response Bubble */}
-          <div className="flex-1 w-full bg-white/95 backdrop-blur-md rounded-2xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5 text-left">
-            <div className="space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                {activeScene.title}
-              </span>
-              <p className="text-sm sm:text-base text-gray-900 font-medium leading-relaxed">
-                &ldquo;{activeScene.dialogue}&rdquo;
-              </p>
-            </div>
-
-            {/* Response Options */}
-            {isDialogue && selectedResponseIndex === null && (
-              <div className="space-y-2 pt-2">
-                <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                  Select your response:
+          {/* Right Floating Elevated Dialogue Card */}
+          <div className="w-full md:w-7/12 flex justify-center md:justify-end my-auto z-10 py-4">
+            <div className="w-full max-w-xl bg-white text-zinc-900 rounded-2xl md:rounded-3xl p-7 sm:p-9 shadow-2xl border border-zinc-200/90 text-left space-y-5 animate-in fade-in duration-200">
+              {/* Scene Eyebrow & Title */}
+              <div className="space-y-1.5 border-b border-zinc-100 pb-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                    {activeScene.title || 'Workplace Scenario'}
+                  </span>
+                  <span className="text-[10px] font-semibold text-zinc-400 font-mono">
+                    Scene {activeSceneIndex + 1} of {scenarioScenes.length}
+                  </span>
                 </div>
-                {(activeScene.responses || []).map((resp, rIdx) => (
-                  <button
-                    key={rIdx}
-                    type="button"
-                    onClick={() => handleSelectScenarioResponse(rIdx)}
-                    className="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-xs sm:text-sm font-semibold text-gray-800 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
-                  >
-                    {resp.text}
-                  </button>
-                ))}
               </div>
-            )}
 
-            {/* Reaction Feedback View */}
-            {isDialogue && selectedResponseIndex !== null && activeScene.responses && (
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 animate-in fade-in duration-150">
-                <div className="text-xs font-bold text-gray-800">Feedback:</div>
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                  {activeScene.responses[selectedResponseIndex]?.feedback}
-                </p>
-                <div className="pt-2 flex justify-end">
+              {/* Character Speech Quote or Narrative Hook */}
+              <div className="space-y-2">
+                <div className="border-l-4 border-indigo-600 pl-4 py-1">
+                  <p className="text-sm sm:text-base font-semibold text-zinc-900 leading-relaxed">
+                    &ldquo;{activeScene.dialogue}&rdquo;
+                  </p>
+                </div>
+              </div>
+
+              {/* Interactive Response Options (Dialogue Mode) */}
+              {isDialogue && selectedResponseIndex === null && (
+                <div className="space-y-2.5 pt-2">
+                  <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+                    Choose your action:
+                  </div>
+                  {(activeScene.responses || []).map((resp, rIdx) => (
+                    <button
+                      key={rIdx}
+                      type="button"
+                      onClick={() => handleSelectScenarioResponse(rIdx)}
+                      className="w-full text-left p-3.5 rounded-xl border border-zinc-200/90 hover:border-indigo-500 hover:bg-indigo-50/40 text-xs sm:text-sm font-semibold text-zinc-800 transition-all cursor-pointer shadow-2xs hover:shadow-xs flex items-start gap-3 group"
+                    >
+                      <span className="w-4 h-4 rounded-full border-2 border-zinc-300 group-hover:border-indigo-600 mt-0.5 flex-shrink-0 transition-colors" />
+                      <span className="leading-snug">{resp.text}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Consequence Feedback Panel (After Choice) */}
+              {isDialogue && selectedResponseIndex !== null && activeScene.responses && (
+                <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3.5 animate-in fade-in duration-150">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                    <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                      Outcome & Assessment
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed font-medium">
+                    {activeScene.responses[selectedResponseIndex]?.feedback}
+                  </p>
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleProceedScenario(
+                          activeScene.responses![selectedResponseIndex].targetSceneId
+                        )
+                      }
+                      className="bg-[#2b5c8f] hover:bg-[#20446b] text-white font-bold px-7 py-2.5 rounded-full text-xs tracking-widest uppercase cursor-pointer shadow-md transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-1.5"
+                    >
+                      <span>Continue</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Informational Scene: Pill-Shaped Continue Button */}
+              {!isDialogue && (
+                <div className="pt-4 flex justify-end border-t border-zinc-100">
                   <button
                     type="button"
                     onClick={() =>
-                      handleProceedScenario(activeScene.responses![selectedResponseIndex].targetSceneId)
+                      handleProceedScenario(activeScene.continueTargetSceneId || 'next')
                     }
-                    className="px-5 py-2 rounded-full text-white text-xs font-semibold cursor-pointer shadow-xs transition-transform hover:scale-105"
-                    style={{ backgroundColor: accentColor }}
+                    className="bg-[#2b5c8f] hover:bg-[#20446b] text-white font-bold px-8 py-2.5 rounded-full text-xs tracking-widest uppercase cursor-pointer shadow-md transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-1.5"
                   >
-                    Continue &rarr;
+                    <span>Continue</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              </div>
-            )}
-
-            {/* Informational Continue View */}
-            {!isDialogue && (
-              <div className="pt-3 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => handleProceedScenario(activeScene.continueTargetSceneId || 'next')}
-                  className="px-6 py-2.5 rounded-full text-white text-xs font-semibold cursor-pointer shadow-xs transition-transform hover:scale-105"
-                  style={{ backgroundColor: accentColor }}
-                >
-                  Continue &rarr;
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>

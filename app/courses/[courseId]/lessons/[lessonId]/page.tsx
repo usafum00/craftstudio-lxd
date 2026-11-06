@@ -1104,43 +1104,45 @@ export default function LessonEditorPage({
         </div>
       </header>
 
-      {/* 2. Main Centered Lesson Canvas */}
-      <main className="max-w-3xl mx-auto w-full mt-8 px-4 sm:px-0">
-        {/* Lesson Header Container */}
-        <div className="bg-white border border-gray-200/80 rounded-2xl shadow-xs p-8 sm:p-12 mb-6">
-          <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-            {lesson.type === 'quiz' ? 'Quiz / Assessment' : 'Lesson'}
-          </div>
-
-          {/* Inline Editable Lesson Title */}
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={handleTitleBlur}
-            placeholder="Lesson Title"
-            className="w-full text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight outline-none border-b border-transparent hover:border-gray-200 focus:border-sky-500 pb-1 transition-colors bg-transparent"
-          />
-
-          {/* Author Badge Row */}
-          <div className="flex items-center gap-2.5 py-3">
-            <div className="w-7 h-7 rounded-full bg-[#ec4899] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-              {course.authorAvatar || 'MA'}
+      {/* 2. Main Full-Bleed Lesson Canvas */}
+      <main className="w-full mt-6 pb-28">
+        {/* Lesson Header Container (Centered 4xl reading width) */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-8">
+          <div className="bg-white border border-gray-200/80 rounded-2xl shadow-xs p-8 sm:p-12">
+            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              {lesson.type === 'quiz' ? 'Quiz / Assessment' : 'Lesson'}
             </div>
-            <span className="text-xs font-semibold text-gray-700">
-              {course.authorName || 'Mike Afurong'}
-            </span>
-          </div>
 
-          {/* Thick Horizontal Brand Accent Bar */}
-          <div
-            className="w-full h-1.5 rounded-full transition-colors duration-300"
-            style={{ backgroundColor: accentColor }}
-          />
+            {/* Inline Editable Lesson Title */}
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleTitleBlur}
+              placeholder="Lesson Title"
+              className="w-full text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight outline-none border-b border-transparent hover:border-gray-200 focus:border-sky-500 pb-1 transition-colors bg-transparent"
+            />
+
+            {/* Author Badge Row */}
+            <div className="flex items-center gap-2.5 py-3">
+              <div className="w-7 h-7 rounded-full bg-[#ec4899] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                {course.authorAvatar || 'MA'}
+              </div>
+              <span className="text-xs font-semibold text-gray-700">
+                {course.authorName || 'Mike Afurong'}
+              </span>
+            </div>
+
+            {/* Thick Horizontal Brand Accent Bar */}
+            <div
+              className="w-full h-1.5 rounded-full transition-colors duration-300"
+              style={{ backgroundColor: accentColor }}
+            />
+          </div>
         </div>
 
-        {/* 3. Block Stack with DnD & Hover Controls */}
-        <div className="space-y-4">
+        {/* 3. Full-Bleed Block Stack with DnD & Hover Controls */}
+        <div className="w-full space-y-1">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={(lesson.blocks || []).map((b) => b.id)} strategy={verticalListSortingStrategy}>
               {(lesson.blocks || []).map((block, index) => (

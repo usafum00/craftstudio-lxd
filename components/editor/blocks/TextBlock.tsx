@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react';
 import { Block } from '@/lib/types';
+import { isBlockDark } from '@/lib/contrast';
 import { Plus, Trash2 } from 'lucide-react';
 
 interface TextBlockProps {
@@ -13,6 +14,11 @@ interface TextBlockProps {
 
 export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerMode = false }: TextBlockProps) {
   const { subtype, content } = block;
+  const isDark = isBlockDark(block.settings);
+
+  const headingColorClass = isDark ? 'text-white' : 'text-gray-900';
+  const subheadColorClass = isDark ? 'text-zinc-200' : 'text-gray-800';
+  const bodyColorClass = isDark ? 'text-zinc-200 prose-invert' : 'text-gray-700 prose-slate';
 
   const handleContentBlur = (field: string, html: string) => {
     onChange({
@@ -82,7 +88,7 @@ export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleContentBlur('heading', e.currentTarget.innerHTML)}
-          className={`text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight rounded p-1 transition-all ${
+          className={`text-2xl sm:text-3xl font-bold ${headingColorClass} tracking-tight rounded p-1 transition-all ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
           dangerouslySetInnerHTML={{ __html: (content.heading as string) || 'Enter your heading...' }}
@@ -98,7 +104,7 @@ export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleContentBlur('subheading', e.currentTarget.innerHTML)}
-          className={`text-lg sm:text-xl font-semibold text-gray-800 tracking-tight rounded p-1 transition-all ${
+          className={`text-lg sm:text-xl font-semibold ${subheadColorClass} tracking-tight rounded p-1 transition-all ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
           dangerouslySetInnerHTML={{ __html: (content.subheading as string) || 'Enter your subheading...' }}
@@ -114,7 +120,7 @@ export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleContentBlur('heading', e.currentTarget.innerHTML)}
-          className={`text-xl sm:text-2xl font-bold text-gray-900 tracking-tight rounded p-1 transition-all ${
+          className={`text-xl sm:text-2xl font-bold ${headingColorClass} tracking-tight rounded p-1 transition-all ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
           dangerouslySetInnerHTML={{ __html: (content.heading as string) || 'Understanding Phishing Tactics' }}
@@ -123,7 +129,7 @@ export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleContentBlur('body', e.currentTarget.innerHTML)}
-          className={`text-sm sm:text-base text-gray-700 leading-relaxed rounded p-1 transition-all prose prose-slate max-w-none ${
+          className={`text-sm sm:text-base ${bodyColorClass} leading-relaxed rounded p-1 transition-all max-w-none ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
           dangerouslySetInnerHTML={{
@@ -143,7 +149,7 @@ export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleContentBlur('subheading', e.currentTarget.innerHTML)}
-          className={`text-base sm:text-lg font-semibold text-gray-800 tracking-tight rounded p-1 transition-all ${
+          className={`text-base sm:text-lg font-semibold ${subheadColorClass} tracking-tight rounded p-1 transition-all ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
           dangerouslySetInnerHTML={{ __html: (content.subheading as string) || 'Key Vulnerability Patterns' }}
@@ -152,7 +158,7 @@ export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleContentBlur('body', e.currentTarget.innerHTML)}
-          className={`text-sm sm:text-base text-gray-700 leading-relaxed rounded p-1 transition-all prose prose-slate max-w-none ${
+          className={`text-sm sm:text-base ${bodyColorClass} leading-relaxed rounded p-1 transition-all max-w-none ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
           dangerouslySetInnerHTML={{
@@ -172,9 +178,9 @@ export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleContentBlur('columnLeft', e.currentTarget.innerHTML)}
-          className={`text-sm sm:text-base text-gray-700 leading-relaxed rounded p-1 transition-all border-r border-transparent md:border-gray-100 ${
-            isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
-          }`}
+          className={`text-sm sm:text-base ${isDark ? 'text-zinc-200' : 'text-gray-700'} leading-relaxed rounded p-1 transition-all border-r border-transparent ${
+            isDark ? 'md:border-zinc-700' : 'md:border-gray-100'
+          } ${isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'}`}
           dangerouslySetInnerHTML={{
             __html:
               (content.columnLeft as string) ||
@@ -185,7 +191,7 @@ export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleContentBlur('columnRight', e.currentTarget.innerHTML)}
-          className={`text-sm sm:text-base text-gray-700 leading-relaxed rounded p-1 transition-all ${
+          className={`text-sm sm:text-base ${isDark ? 'text-zinc-200' : 'text-gray-700'} leading-relaxed rounded p-1 transition-all ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
           dangerouslySetInnerHTML={{
@@ -293,7 +299,7 @@ export function TextBlock({ block, onChange, accentColor = '#ff5722', isLearnerM
         contentEditable={!isLearnerMode}
         suppressContentEditableWarning
         onBlur={(e) => !isLearnerMode && handleContentBlur('body', e.currentTarget.innerHTML)}
-        className={`text-sm sm:text-base text-gray-700 leading-relaxed rounded p-1 transition-all prose prose-slate max-w-none ${
+        className={`text-sm sm:text-base ${bodyColorClass} leading-relaxed rounded p-1 transition-all max-w-none ${
           isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
         }`}
         dangerouslySetInnerHTML={{

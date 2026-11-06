@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Block } from '@/lib/types';
+import { isBlockDark } from '@/lib/contrast';
 import { Quote as QuoteIcon, Camera } from 'lucide-react';
 
 interface QuoteBlockProps {
@@ -14,6 +15,11 @@ interface QuoteBlockProps {
 
 export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadImage, isLearnerMode = false }: QuoteBlockProps) {
   const { subtype, content } = block;
+  const isDark = isBlockDark(block.settings);
+
+  const quoteColor = isDark ? 'text-white' : 'text-gray-800';
+  const authorColor = isDark ? 'text-white' : 'text-gray-900';
+  const roleColor = isDark ? 'text-zinc-300' : 'text-gray-500';
 
   const handleBlur = (field: string, text: string) => {
     onChange({
@@ -53,7 +59,7 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
             contentEditable={!isLearnerMode}
             suppressContentEditableWarning
             onBlur={(e) => !isLearnerMode && handleBlur('quote', e.currentTarget.innerText)}
-            className={`text-base sm:text-lg font-medium text-gray-800 italic leading-relaxed rounded p-1 ${
+            className={`text-base sm:text-lg font-medium ${quoteColor} italic leading-relaxed rounded p-1 ${
               isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
             }`}
           >
@@ -64,7 +70,7 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
               contentEditable={!isLearnerMode}
               suppressContentEditableWarning
               onBlur={(e) => !isLearnerMode && handleBlur('author', e.currentTarget.innerText)}
-              className={`text-xs sm:text-sm font-bold text-gray-900 rounded ${
+              className={`text-xs sm:text-sm font-bold ${authorColor} rounded ${
                 isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
               }`}
             >
@@ -75,7 +81,7 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
               contentEditable={!isLearnerMode}
               suppressContentEditableWarning
               onBlur={(e) => !isLearnerMode && handleBlur('role', e.currentTarget.innerText)}
-              className={`text-xs text-gray-500 rounded ${
+              className={`text-xs ${roleColor} rounded ${
                 isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
               }`}
             >
@@ -98,7 +104,7 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleBlur('quote', e.currentTarget.innerText)}
-          className={`text-base sm:text-lg text-gray-800 leading-relaxed font-normal rounded p-1 ${
+          className={`text-base sm:text-lg ${quoteColor} leading-relaxed font-normal rounded p-1 ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
         >
@@ -109,7 +115,7 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
             contentEditable={!isLearnerMode}
             suppressContentEditableWarning
             onBlur={(e) => !isLearnerMode && handleBlur('author', e.currentTarget.innerText)}
-            className={`text-xs font-semibold uppercase tracking-wider text-gray-600 rounded ${
+            className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-zinc-300' : 'text-gray-600'} rounded ${
               isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
             }`}
           >
@@ -124,12 +130,12 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
     // Quote D: Large display serif quote with centered author citation
     return (
       <div className="w-full text-center py-6 px-4">
-        <QuoteIcon className="w-8 h-8 mx-auto text-gray-300 mb-3" />
+        <QuoteIcon className={`w-8 h-8 mx-auto mb-3 ${isDark ? 'text-white/40' : 'text-gray-300'}`} />
         <blockquote
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleBlur('quote', e.currentTarget.innerText)}
-          className={`font-serif text-xl sm:text-3xl font-normal text-gray-900 leading-snug max-w-2xl mx-auto italic rounded px-2 py-1 ${
+          className={`font-serif text-xl sm:text-3xl font-normal ${quoteColor} leading-snug max-w-2xl mx-auto italic rounded px-2 py-1 ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
         >
@@ -140,7 +146,7 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
             contentEditable={!isLearnerMode}
             suppressContentEditableWarning
             onBlur={(e) => !isLearnerMode && handleBlur('author', e.currentTarget.innerText)}
-            className={`text-xs sm:text-sm font-bold text-gray-900 uppercase tracking-widest rounded inline-block ${
+            className={`text-xs sm:text-sm font-bold ${authorColor} uppercase tracking-widest rounded inline-block ${
               isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
             }`}
           >
@@ -208,7 +214,10 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
     <div className="w-full py-4 flex items-start gap-4">
       <div
         className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
-        style={{ backgroundColor: `${accentColor}18`, color: accentColor }}
+        style={{
+          backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : `${accentColor}18`,
+          color: isDark ? '#ffffff' : accentColor,
+        }}
       >
         <QuoteIcon className="w-5 h-5" />
       </div>
@@ -217,7 +226,7 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleBlur('quote', e.currentTarget.innerText)}
-          className={`text-base sm:text-lg font-medium text-gray-800 italic leading-relaxed rounded p-1 ${
+          className={`text-base sm:text-lg font-medium ${quoteColor} italic leading-relaxed rounded p-1 ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
         >
@@ -228,7 +237,7 @@ export function QuoteBlock({ block, onChange, accentColor = '#ff5722', onUploadI
             contentEditable={!isLearnerMode}
             suppressContentEditableWarning
             onBlur={(e) => !isLearnerMode && handleBlur('author', e.currentTarget.innerText)}
-            className={`text-xs sm:text-sm font-bold text-gray-900 rounded ${
+            className={`text-xs sm:text-sm font-bold ${authorColor} rounded ${
               isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
             }`}
           >

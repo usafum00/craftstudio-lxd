@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Block } from '@/lib/types';
+import { isBlockDark } from '@/lib/contrast';
 import { Info } from 'lucide-react';
 
 interface StatementBlockProps {
@@ -13,6 +14,11 @@ interface StatementBlockProps {
 
 export function StatementBlock({ block, onChange, accentColor = '#ff5722', isLearnerMode = false }: StatementBlockProps) {
   const { subtype, content } = block;
+  const isDark = isBlockDark(block.settings);
+
+  const statementColorClass = isDark ? 'text-white' : 'text-gray-900';
+  const subtextColorClass = isDark ? 'text-zinc-300' : 'text-gray-500';
+  const borderClass = isDark ? 'border-white/20' : 'border-gray-200/90';
 
   const handleBlur = (field: string, text: string) => {
     onChange({
@@ -31,12 +37,12 @@ export function StatementBlock({ block, onChange, accentColor = '#ff5722', isLea
   if (subtype === 'statement_a') {
     // Statement A: Centered serif/bold statement between top and bottom thin horizontal borders
     return (
-      <div className="w-full text-center py-6 border-y border-gray-200/90 my-2">
+      <div className={`w-full text-center py-6 border-y ${borderClass} my-2`}>
         <div
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleBlur('statement', e.currentTarget.innerText)}
-          className={`font-serif text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-snug rounded px-2 py-1 ${
+          className={`font-serif text-xl sm:text-2xl font-bold ${statementColorClass} tracking-tight leading-snug rounded px-2 py-1 ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
         >
@@ -47,7 +53,7 @@ export function StatementBlock({ block, onChange, accentColor = '#ff5722', isLea
             contentEditable={!isLearnerMode}
             suppressContentEditableWarning
             onBlur={(e) => !isLearnerMode && handleBlur('subtext', e.currentTarget.innerText)}
-            className={`text-xs sm:text-sm text-gray-500 font-sans mt-3 max-w-xl mx-auto leading-relaxed rounded px-2 py-1 ${
+            className={`text-xs sm:text-sm ${subtextColorClass} font-sans mt-3 max-w-xl mx-auto leading-relaxed rounded px-2 py-1 ${
               isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
             }`}
           >
@@ -70,7 +76,7 @@ export function StatementBlock({ block, onChange, accentColor = '#ff5722', isLea
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleBlur('statement', e.currentTarget.innerText)}
-          className={`text-lg sm:text-2xl font-bold text-gray-900 tracking-tight leading-snug rounded px-2 py-1 max-w-2xl ${
+          className={`text-lg sm:text-2xl font-bold ${statementColorClass} tracking-tight leading-snug rounded px-2 py-1 max-w-2xl ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
         >
@@ -81,7 +87,7 @@ export function StatementBlock({ block, onChange, accentColor = '#ff5722', isLea
             contentEditable={!isLearnerMode}
             suppressContentEditableWarning
             onBlur={(e) => !isLearnerMode && handleBlur('subtext', e.currentTarget.innerText)}
-            className={`text-xs sm:text-sm text-gray-500 mt-3 max-w-xl leading-relaxed rounded px-2 py-1 ${
+            className={`text-xs sm:text-sm ${subtextColorClass} mt-3 max-w-xl leading-relaxed rounded px-2 py-1 ${
               isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
             }`}
           >
@@ -93,14 +99,14 @@ export function StatementBlock({ block, onChange, accentColor = '#ff5722', isLea
   }
 
   if (subtype === 'statement_c') {
-    // Statement C: Left-aligned statement inside a full-width light gray background band
+    // Statement C: Left-aligned statement inside a full-width background card (crisp white if dark, or soft gray)
     return (
-      <div className="w-full bg-gray-50/90 border border-gray-100 rounded-2xl p-6 sm:p-8">
+      <div className={`w-full rounded-2xl p-6 sm:p-8 ${isDark ? 'bg-zinc-900/90 text-white border border-zinc-700 shadow-xl' : 'bg-gray-50/90 border border-gray-100 text-gray-900'}`}>
         <div
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleBlur('statement', e.currentTarget.innerText)}
-          className={`text-base sm:text-xl font-bold text-gray-900 tracking-tight leading-snug rounded p-1 ${
+          className={`text-base sm:text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} tracking-tight leading-snug rounded p-1 ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
         >
@@ -111,7 +117,7 @@ export function StatementBlock({ block, onChange, accentColor = '#ff5722', isLea
             contentEditable={!isLearnerMode}
             suppressContentEditableWarning
             onBlur={(e) => !isLearnerMode && handleBlur('subtext', e.currentTarget.innerText)}
-            className={`text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed rounded p-1 ${
+            className={`text-xs sm:text-sm ${isDark ? 'text-zinc-300' : 'text-gray-600'} mt-2 leading-relaxed rounded p-1 ${
               isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
             }`}
           >
@@ -134,7 +140,7 @@ export function StatementBlock({ block, onChange, accentColor = '#ff5722', isLea
           contentEditable={!isLearnerMode}
           suppressContentEditableWarning
           onBlur={(e) => !isLearnerMode && handleBlur('statement', e.currentTarget.innerText)}
-          className={`text-base sm:text-xl font-bold text-gray-900 tracking-tight leading-snug rounded p-1 ${
+          className={`text-base sm:text-xl font-bold ${statementColorClass} tracking-tight leading-snug rounded p-1 ${
             isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
           }`}
         >
@@ -145,7 +151,7 @@ export function StatementBlock({ block, onChange, accentColor = '#ff5722', isLea
             contentEditable={!isLearnerMode}
             suppressContentEditableWarning
             onBlur={(e) => !isLearnerMode && handleBlur('subtext', e.currentTarget.innerText)}
-            className={`text-xs sm:text-sm text-gray-500 mt-2 leading-relaxed rounded p-1 ${
+            className={`text-xs sm:text-sm ${subtextColorClass} mt-2 leading-relaxed rounded p-1 ${
               isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-sky-500/50'
             }`}
           >

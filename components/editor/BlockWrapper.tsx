@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Block, BlockSettings, Lesson } from '@/lib/types';
+import { isBlockDark } from '@/lib/contrast';
 import { TextBlock } from './blocks/TextBlock';
 import { StatementBlock } from './blocks/StatementBlock';
 import { QuoteBlock } from './blocks/QuoteBlock';
@@ -100,10 +101,13 @@ export function BlockWrapper({
   };
 
   const isVideo = block.category === 'multimedia' && block.subtype === 'video';
+  const isScenario = block.category === 'interactive' && block.subtype === 'scenario';
+  const isGallery = block.category === 'gallery';
 
   // Get readable block label for top-left pill
   const getBlockLabel = () => {
     if (isVideo) return 'Video';
+    if (isScenario) return 'Scenario Stage';
     if (block.category === 'text') {
       if (block.subtype === 'heading') return 'Heading';
       if (block.subtype === 'subheading') return 'Subheading';
@@ -146,58 +150,84 @@ export function BlockWrapper({
   // Compute numeric padding
   const getNumericPadding = (val: unknown, fallback: number) => {
     if (typeof val === 'number') return val;
-    if (val === 'small') return 15;
-    if (val === 'medium') return 30;
-    if (val === 'large') return 60;
+    if (val === 'small') return 16;
+    if (val === 'medium') return 32;
+    if (val === 'large') return 64;
     return fallback;
   };
 
-  const topPadding = getNumericPadding(block.settings?.paddingTop, 30);
-  const bottomPadding = getNumericPadding(block.settings?.paddingBottom, 30);
+  const topPadding = getNumericPadding(block.settings?.paddingTop, 36);
+  const bottomPadding = getNumericPadding(block.settings?.paddingBottom, 36);
 
-  // Compute background styling
+  // Layer 1: Background Styling
   const bgType = block.settings?.backgroundColor || 'light';
-  let bgClass = 'bg-white text-slate-900';
-  let bgInlineStyle: React.CSSProperties = {};
+  let bgStyle: React.CSSProperties = {};
 
   if (bgType === 'gray') {
-    bgClass = 'bg-[#f1f5f9] text-slate-900';
+    bgStyle = { backgroundColor: '#f4f4f5' };
   } else if (bgType === 'theme') {
-    bgClass = 'text-white';
-    bgInlineStyle = { backgroundColor: accentColor };
+    bgStyle = { backgroundColor: accentColor };
   } else if (bgType === 'theme_tint') {
-    bgClass = 'text-slate-900';
-    bgInlineStyle = { backgroundColor: `${accentColor}18` };
+    bgStyle = { backgroundColor: `${accentColor}18` };
   } else if (bgType === 'dark') {
-    bgClass = 'bg-[#262626] text-white';
+    bgStyle = { backgroundColor: '#18181b' };
   } else if (bgType === 'black') {
-    bgClass = 'bg-[#000000] text-white';
+    bgStyle = { backgroundColor: '#000000' };
   } else if (bgType === 'custom') {
-    bgClass = 'text-slate-900';
-    bgInlineStyle = { backgroundColor: (block.settings?.customBgColor as string) || '#ffffff' };
+    bgStyle = { backgroundColor: (block.settings?.customBgColor as string) || '#ffffff' };
   } else if (bgType === 'image' && block.settings?.bgImage) {
-    bgClass = 'text-white relative overflow-hidden';
-    bgInlineStyle = {
+    const isParallax = Boolean(block.settings.bgParallax);
+    bgStyle = {
       backgroundImage: `url(${block.settings.bgImage})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundAttachment: isParallax ? 'fixed' : 'scroll',
     };
+  } else {
+    bgStyle = { backgroundColor: '#ffffff' };
   }
 
-  // Content width constraint (Galleries default to wide max-w-6xl container to eliminate empty side padding)
-  const isGallery = block.category === 'gallery';
-  const widthMode = (block.settings?.contentWidth || block.settings?.width || (isGallery ? 'L' : 'M')) as 'S' | 'M' | 'L' | 'full';
+  // Layer 2: Smart Overlay & Blur Engine
+  const isImageBg = bgType === 'image' && Boolean(block.settings?.bgImage);
+  const overlayColorType =
+    (block.settings?.bgOverlayColor as string) ||
+    (block.settings?.bgOverlay === 'light' ? 'white' : 'black');
+  const overlayOpacity =
+    typeof block.settings?.bgOverlayOpacity === 'number'
+      ? block.settings.bgOverlayOpacity
+      : 40;
+  const bgBlur =
+    typeof block.settings?.bgBlur === 'number' ? block.settings.bgBlur : 0;
+
+  const overlayBg =
+    overlayColorType === 'white'
+      ? '#ffffff'
+      : overlayColorType === 'theme'
+      ? accentColor
+      : '#000000';
+
+  // Smart Contrast calculation
+  const isDark = isBlockDark(block.settings);
+
+  // Layer 3: Inner Stage Width Mapping
+  const defaultWidthMode = isGallery || isScenario ? 'L' : 'M';
+  const widthMode = (block.settings?.contentWidth ||
+    block.settings?.width ||
+    defaultWidthMode) as 'S' | 'M' | 'L' | 'full';
+
   const widthClass =
     widthMode === 'S'
-      ? 'max-w-xl mx-auto'
+      ? 'max-w-2xl mx-auto px-4 sm:px-6'
       : widthMode === 'full'
-      ? 'max-w-7xl mx-auto px-4 w-full'
-      : widthMode === 'L' || isGallery
-      ? 'max-w-6xl mx-auto px-4 w-full'
-      : 'max-w-4xl mx-auto';
+      ? 'w-full px-0 sm:px-4'
+      : widthMode === 'L' || isGallery || isScenario
+      ? 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8'
+      : 'max-w-3xl mx-auto px-4 sm:px-6';
 
   const isMediaDrawer = block.category === 'multimedia';
-  const isInteractiveDrawer = block.category === 'interactive' || block.category === 'knowledge_check';
+  const isInteractiveDrawer =
+    block.category === 'interactive' || block.category === 'knowledge_check';
 
   const handleEditClick = () => {
     if (isMediaDrawer) {
@@ -234,7 +264,11 @@ export function BlockWrapper({
     }
   };
 
-  const showToolbars = isHovered || activePopover !== 'none' || videoDrawerOpen || interactiveDrawerOpen;
+  const showToolbars =
+    isHovered ||
+    activePopover !== 'none' ||
+    videoDrawerOpen ||
+    interactiveDrawerOpen;
 
   return (
     <div
@@ -245,11 +279,11 @@ export function BlockWrapper({
         setIsHovered(false);
         setMoreMenuOpen(false);
       }}
-      className="relative group transition-all duration-150 my-1"
+      className="relative group w-full transition-all duration-150"
     >
-      {/* 1. TOP-LEFT FLOATING TOOLBAR: Block Type Badge + [Edit, Style, Format] */}
+      {/* 1. TOP-LEFT FLOATING AUTHOR TOOLBAR: Block Type Badge + [Edit, Style, Format] */}
       <div
-        className={`absolute -top-3.5 left-6 z-30 flex items-center gap-1.5 transition-opacity duration-150 ${
+        className={`absolute top-3 left-4 sm:left-8 z-30 flex items-center gap-1.5 transition-opacity duration-150 ${
           showToolbars ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -257,41 +291,39 @@ export function BlockWrapper({
         <div
           {...attributes}
           {...listeners}
-          className="px-3 py-1 bg-white text-gray-800 text-xs font-semibold rounded-full border border-slate-200/90 shadow-sm flex items-center gap-1.5 select-none cursor-grab active:cursor-grabbing hover:bg-slate-50"
-          title="Drag to reorder"
+          className="px-3 py-1 bg-white text-gray-800 text-xs font-semibold rounded-full border border-slate-200/90 shadow-md flex items-center gap-1.5 select-none cursor-grab active:cursor-grabbing hover:bg-slate-50 backdrop-blur-md"
         >
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-400 group-hover:bg-slate-600 transition-colors" />
           <span>{getBlockLabel()}</span>
         </div>
 
-        {/* 3 Action Buttons: Edit (Pencil), Style (Palette), Format (Ruler/Triangle) */}
-        <div className="bg-white border border-slate-200/90 shadow-sm rounded-full px-1.5 py-0.5 flex items-center gap-0.5">
-          {/* Edit (Pencil icon) */}
+        {/* Action Buttons Capsule */}
+        <div className="flex items-center gap-0.5 bg-white rounded-full border border-slate-200/90 shadow-md p-0.5 backdrop-blur-md">
+          {/* EDIT BUTTON */}
           <button
             type="button"
             onClick={handleEditClick}
-            className={`p-1.5 rounded-full transition-colors cursor-pointer ${
-              videoDrawerOpen || interactiveDrawerOpen
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'text-gray-600 hover:text-black hover:bg-slate-100'
-            }`}
-            title="Edit content"
+            className="px-2.5 py-1 text-xs font-medium text-gray-700 hover:text-black hover:bg-slate-100 rounded-full transition-colors flex items-center gap-1 cursor-pointer"
           >
-            <Pencil className="w-3.5 h-3.5" />
+            <Pencil className="w-3 h-3 text-slate-500" />
+            <span>Edit</span>
           </button>
 
-          {/* Style (Palette icon) */}
+          {/* STYLE BUTTON (POPOVER TRIGGER) */}
           <div className="relative">
             <button
               type="button"
-              onClick={() => setActivePopover(activePopover === 'style' ? 'none' : 'style')}
-              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+              onClick={() =>
+                setActivePopover(activePopover === 'style' ? 'none' : 'style')
+              }
+              className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 cursor-pointer ${
                 activePopover === 'style'
                   ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-gray-600 hover:text-black hover:bg-slate-100'
+                  : 'text-gray-700 hover:text-black hover:bg-slate-100'
               }`}
-              title="Style (Color & Background)"
             >
-              <Palette className="w-3.5 h-3.5" />
+              <Palette className="w-3 h-3 text-slate-500" />
+              <span>Style</span>
             </button>
 
             {activePopover === 'style' && (
@@ -299,39 +331,37 @@ export function BlockWrapper({
                 settings={block.settings || {}}
                 accentColor={accentColor}
                 onUpdateSettings={(newSettings) => {
-                  if (onUpdateSettings) {
-                    onUpdateSettings(block.id, newSettings);
-                  }
+                  if (onUpdateSettings) onUpdateSettings(block.id, newSettings);
                 }}
                 onClose={() => setActivePopover('none')}
               />
             )}
           </div>
 
-          {/* Format (Ruler / Set-square icon) */}
+          {/* FORMAT BUTTON (POPOVER TRIGGER) */}
           <div className="relative">
             <button
               type="button"
-              onClick={() => setActivePopover(activePopover === 'format' ? 'none' : 'format')}
-              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+              onClick={() =>
+                setActivePopover(activePopover === 'format' ? 'none' : 'format')
+              }
+              className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors flex items-center gap-1 cursor-pointer ${
                 activePopover === 'format'
                   ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-gray-600 hover:text-black hover:bg-slate-100'
+                  : 'text-gray-700 hover:text-black hover:bg-slate-100'
               }`}
-              title="Format (Padding, width, radius & seeking)"
             >
-              <DraftingCompass className="w-3.5 h-3.5" />
+              <DraftingCompass className="w-3 h-3 text-slate-500" />
+              <span>Format</span>
             </button>
 
             {activePopover === 'format' && (
               <FormatPopover
+                settings={block.settings || {}}
                 blockCategory={block.category}
                 blockSubtype={block.subtype}
-                settings={block.settings || {}}
                 onUpdateSettings={(newSettings) => {
-                  if (onUpdateSettings) {
-                    onUpdateSettings(block.id, newSettings);
-                  }
+                  if (onUpdateSettings) onUpdateSettings(block.id, newSettings);
                 }}
                 onClose={() => setActivePopover('none')}
               />
@@ -340,28 +370,28 @@ export function BlockWrapper({
         </div>
       </div>
 
-      {/* 2. TOP-RIGHT FLOATING TOOLBAR: AI Transform, Move Up, Move Down, Duplicate, Delete, More */}
+      {/* 2. TOP-RIGHT FLOATING TOOLBAR: AI Transformer + Reorder + Duplicate + Delete */}
       <div
-        className={`absolute -top-3.5 right-6 z-30 flex items-center gap-1 bg-white border border-slate-200/90 shadow-md rounded-xl px-2 py-1 transition-opacity duration-150 ${
+        className={`absolute top-3 right-4 sm:right-8 z-30 flex items-center gap-1 bg-white rounded-full border border-slate-200/90 shadow-md p-1 transition-opacity duration-150 backdrop-blur-md ${
           showToolbars ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* ✨ Magic LXD Transformer */}
-        <MagicTransformerPopover
-          block={block}
-          lessonTitle={lessonTitle}
-          onTransformBlock={onTransformBlock}
-          onInsertBlockBelow={onInsertBlockBelow}
-          onUpdateContent={onUpdateContent}
-        />
-
-        <div className="h-3.5 w-px bg-slate-200 mx-0.5" />
+        {/* AI MAGIC TRANSFORMER */}
+        {onTransformBlock && (
+          <MagicTransformerPopover
+            block={block}
+            onTransformBlock={onTransformBlock}
+            onInsertBlockBelow={onInsertBlockBelow}
+            onUpdateContent={onUpdateContent}
+            lessonTitle={lessonTitle}
+          />
+        )}
 
         <button
           type="button"
           disabled={index === 0}
           onClick={() => onMoveBlock(index, 'up')}
-          className="p-1 text-gray-500 hover:text-black disabled:opacity-25 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+          className="p-1 text-gray-500 hover:text-black disabled:opacity-25 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
           title="Move up"
         >
           <ArrowUp className="w-3.5 h-3.5" />
@@ -371,7 +401,7 @@ export function BlockWrapper({
           type="button"
           disabled={index === totalBlocks - 1}
           onClick={() => onMoveBlock(index, 'down')}
-          className="p-1 text-gray-500 hover:text-black disabled:opacity-25 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+          className="p-1 text-gray-500 hover:text-black disabled:opacity-25 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
           title="Move down"
         >
           <ArrowDown className="w-3.5 h-3.5" />
@@ -380,7 +410,7 @@ export function BlockWrapper({
         <button
           type="button"
           onClick={() => onDuplicateBlock(block.id)}
-          className="p-1 text-gray-500 hover:text-black rounded hover:bg-slate-100 transition-colors cursor-pointer"
+          className="p-1 text-gray-500 hover:text-black rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
           title="Duplicate block"
         >
           <Copy className="w-3.5 h-3.5" />
@@ -389,7 +419,7 @@ export function BlockWrapper({
         <button
           type="button"
           onClick={() => onDeleteBlock(block.id)}
-          className="p-1 text-gray-500 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+          className="p-1 text-gray-500 hover:text-rose-600 rounded-full hover:bg-rose-50 transition-colors cursor-pointer"
           title="Delete block"
         >
           <Trash2 className="w-3.5 h-3.5 text-rose-500" />
@@ -399,14 +429,14 @@ export function BlockWrapper({
           <button
             type="button"
             onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-            className="p-1 text-gray-500 hover:text-black rounded hover:bg-slate-100 transition-colors cursor-pointer"
+            className="p-1 text-gray-500 hover:text-black rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
             title="More actions"
           >
             <MoreHorizontal className="w-3.5 h-3.5" />
           </button>
 
           {moreMenuOpen && (
-            <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-40 text-left">
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-100 py-1.5 z-40 text-left animate-in fade-in zoom-in-95">
               <button
                 type="button"
                 onClick={() => {
@@ -414,7 +444,7 @@ export function BlockWrapper({
                   setShowSaveTemplateModal(true);
                   setMoreMenuOpen(false);
                 }}
-                className="w-full px-3.5 py-2 text-left text-xs text-gray-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                className="w-full px-3.5 py-2 text-left text-xs text-gray-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer font-medium"
               >
                 <BookmarkPlus className="w-3.5 h-3.5 text-amber-500" />
                 <span>Save as Template</span>
@@ -424,30 +454,45 @@ export function BlockWrapper({
         </div>
       </div>
 
-      {/* 3. MAIN BLOCK CONTAINER (Applies full-bleed background & numeric padding) */}
-      <div
+      {/* ========================================================================= */}
+      {/* 3-LAYER SANDWICH ARCHITECTURE                                             */}
+      {/* ========================================================================= */}
+      {/* LAYER 1: OUTER SECTION WRAPPER (100% Full-Viewport Bleed)                 */}
+      <section
         style={{
           paddingTop: `${topPadding}px`,
           paddingBottom: `${bottomPadding}px`,
-          ...bgInlineStyle,
+          ...bgStyle,
         }}
-        className={`w-full px-6 sm:px-10 transition-all duration-200 border ${
-          isHovered ? 'border-sky-300 ring-2 ring-sky-100/50' : 'border-transparent'
-        } ${bgClass}`}
+        className={`relative w-full overflow-hidden transition-all duration-200 border-y ${
+          isHovered
+            ? 'border-sky-300 ring-2 ring-sky-100/60 shadow-xs'
+            : 'border-transparent'
+        }`}
       >
-        {bgType === 'image' && (
-          <div
-            className={`absolute inset-0 ${
-              block.settings?.bgOverlay === 'light'
-                ? 'bg-white/70'
-                : block.settings?.bgOverlay === 'none'
-                ? 'bg-transparent'
-                : 'bg-black/60'
-            }`}
-          />
+        {/* LAYER 2: SMART OVERLAY & BLUR ENGINE (When background image is active)  */}
+        {isImageBg && (
+          <>
+            <div
+              className="absolute inset-0 pointer-events-none transition-all duration-300"
+              style={{
+                backgroundColor: overlayBg,
+                opacity: overlayOpacity / 100,
+                backdropFilter: bgBlur > 0 ? `blur(${bgBlur}px)` : undefined,
+                WebkitBackdropFilter: bgBlur > 0 ? `blur(${bgBlur}px)` : undefined,
+              }}
+            />
+            {/* Top/Bottom subtle vignette for theatrical photographic depth */}
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/20 via-transparent to-black/25" />
+          </>
         )}
 
-        <div className={`relative z-10 w-full ${widthClass}`}>
+        {/* LAYER 3: INNER CONTENT STAGE (Width controlled independently)           */}
+        <div
+          className={`relative z-10 w-full ${widthClass} ${
+            isDark ? 'text-white' : 'text-slate-900'
+          }`}
+        >
           {/* VIDEO BLOCK */}
           {isVideo && (
             <VideoBlock
@@ -460,7 +505,7 @@ export function BlockWrapper({
             />
           )}
 
-          {/* OTHER BLOCKS */}
+          {/* TEXT BLOCK */}
           {block.category === 'text' && (
             <TextBlock
               block={block}
@@ -469,6 +514,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* STATEMENT BLOCK */}
           {block.category === 'statement' && (
             <StatementBlock
               block={block}
@@ -477,6 +523,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* QUOTE BLOCK */}
           {block.category === 'quote' && (
             <QuoteBlock
               block={block}
@@ -486,6 +533,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* LIST BLOCK */}
           {block.category === 'list' && (
             <ListBlock
               block={block}
@@ -494,6 +542,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* IMAGE BLOCK */}
           {block.category === 'image' && (
             <ImageBlock
               block={block}
@@ -503,6 +552,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* GALLERY BLOCK */}
           {block.category === 'gallery' && (
             <GalleryBlock
               block={block}
@@ -512,6 +562,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* MULTIMEDIA BLOCK (AUDIO, EMBED, ATTACHMENT) */}
           {block.category === 'multimedia' && !isVideo && (
             <MultimediaBlock
               block={block}
@@ -521,6 +572,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* DIVIDER BLOCK (CONTINUE BUTTON / SPACER) */}
           {block.category === 'divider' && (
             <DividerBlock
               block={block}
@@ -529,6 +581,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* CODE BLOCK */}
           {block.category === 'code' && (
             <CodeBlock
               block={block}
@@ -537,6 +590,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* INTERACTIVE BLOCK (ACCORDION, TABS, SCENARIO, FLASHCARDS, PROCESS) */}
           {block.category === 'interactive' && (
             <InteractiveBlock
               block={block}
@@ -546,6 +600,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* KNOWLEDGE CHECK BLOCK */}
           {block.category === 'knowledge_check' && (
             <KnowledgeCheckBlock
               block={block}
@@ -554,6 +609,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* SURVEY BLOCK */}
           {block.category === 'survey' && (
             <SurveyBlock
               block={block}
@@ -562,6 +618,7 @@ export function BlockWrapper({
             />
           )}
 
+          {/* CHART BLOCK */}
           {block.category === 'chart' && (
             <ChartBlock
               block={block}
@@ -570,7 +627,7 @@ export function BlockWrapper({
             />
           )}
         </div>
-      </div>
+      </section>
 
       {/* 4. BOTTOM INSERT TRIGGER ON BORDER: Horizontal orange line + circular '+' button */}
       <div
@@ -578,94 +635,123 @@ export function BlockWrapper({
           isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
+        {/* Subtle Horizontal Guide Line */}
         <div
-          className="absolute inset-x-8 h-0.5 rounded-full"
-          style={{ backgroundColor: accentColor }}
+          className="absolute inset-x-0 h-0.5"
+          style={{ backgroundColor: `${accentColor}70` }}
         />
+
+        {/* Circular Centered Plus Button */}
         <button
           type="button"
           onClick={() => onOpenLibrary(index + 1)}
-          className="relative z-10 w-6 h-6 rounded-full bg-black hover:bg-gray-800 text-white hover:scale-110 flex items-center justify-center shadow-md transition-all cursor-pointer"
-          title="Insert block below"
+          style={{ backgroundColor: accentColor }}
+          className="relative z-10 w-6 h-6 rounded-full text-white flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ring-2 ring-white"
+          title="Insert block here"
         >
-          <Plus className="w-3.5 h-3.5 stroke-[3]" />
+          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
         </button>
       </div>
 
-      {/* Edit Video & Multimedia Left Drawer (Panel 1) */}
-      {isMediaDrawer && (
-        <EditVideoDrawer
-          isOpen={videoDrawerOpen}
-          block={block}
-          onClose={() => setVideoDrawerOpen(false)}
-          onUpdateContent={(newContent) => onUpdateContent(block.id, newContent)}
-          accentColor={accentColor}
-        />
-      )}
+      {/* DRAWER: Video Settings & Media Vault */}
+      <EditVideoDrawer
+        isOpen={videoDrawerOpen}
+        block={block}
+        onClose={() => setVideoDrawerOpen(false)}
+        onUpdateContent={(newContent) => onUpdateContent(block.id, newContent)}
+        accentColor={accentColor}
+      />
 
-      {/* Edit Interactive & Knowledge Check Left Drawer */}
-      {isInteractiveDrawer && (
-        <EditInteractiveDrawer
-          isOpen={interactiveDrawerOpen}
-          block={block}
-          onClose={() => setInteractiveDrawerOpen(false)}
-          onUpdateContent={(newContent) => onUpdateContent(block.id, newContent)}
-          onUpdateSettings={(newSettings) => {
-            if (onUpdateSettings) onUpdateSettings(block.id, newSettings);
-          }}
-          onUploadMedia={onUploadMedia}
-          courseLessons={courseLessons}
-          accentColor={accentColor}
-        />
-      )}
+      {/* DRAWER: Interactive (Accordion, Tabs, Scenario, Flashcards, Knowledge Check) */}
+      <EditInteractiveDrawer
+        isOpen={interactiveDrawerOpen}
+        block={block}
+        onClose={() => setInteractiveDrawerOpen(false)}
+        onUpdateContent={(newContent) => onUpdateContent(block.id, newContent)}
+        onUpdateSettings={(newSettings) => {
+          if (onUpdateSettings) onUpdateSettings(block.id, newSettings);
+        }}
+        onUploadMedia={onUploadMedia}
+        courseLessons={courseLessons}
+        accentColor={accentColor}
+      />
 
-      {/* Save Template Modal */}
+      {/* MODAL: Save as Custom Template */}
       {showSaveTemplateModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-sm w-full p-6 animate-in fade-in zoom-in-95 duration-150 text-left">
-            <h3 className="text-base font-bold text-gray-900 mb-1">Save as Template</h3>
-            <p className="text-xs text-gray-500 mb-4">
-              Save this customized block for reuse across all of your courses.
-            </p>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
+          onClick={() => setShowSaveTemplateModal(false)}
+        >
+          <div
+            className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4 animate-in fade-in zoom-in-95 text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <BookmarkPlus className="w-4 h-4 text-amber-500" />
+                <h3 className="text-sm font-bold text-gray-900">
+                  Save as Block Template
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSaveTemplateModal(false)}
+                className="text-gray-400 hover:text-gray-700 p-1 rounded-md"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+
             <div className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-gray-700 uppercase mb-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Template Name
                 </label>
                 <input
                   type="text"
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-black"
+                  placeholder="e.g. Executive Phishing Scenario"
+                  className="w-full text-xs px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-gray-900"
                 />
               </div>
+
               <div>
-                <label className="block text-[11px] font-semibold text-gray-700 uppercase mb-1">
-                  Description
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Description (optional)
                 </label>
                 <textarea
+                  rows={2}
                   value={templateDesc}
                   onChange={(e) => setTemplateDesc(e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-black resize-none"
+                  placeholder="Reusable block preset for cybersecurity training modules"
+                  className="w-full text-xs px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-gray-900 resize-none"
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-2 mt-5">
+
+            <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowSaveTemplateModal(false)}
-                className="px-3.5 py-1.5 text-xs text-gray-600 hover:text-gray-900 font-semibold cursor-pointer"
+                className="px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 font-medium cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
+                disabled={!templateName.trim() || templateSaved}
                 onClick={handleSaveAsTemplate}
-                className="px-4 py-1.5 text-xs font-semibold bg-black hover:bg-gray-800 text-white rounded-full transition-colors cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-black disabled:opacity-50 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                {templateSaved ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : null}
-                <span>{templateSaved ? 'Saved!' : 'Save Template'}</span>
+                {templateSaved ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Saved to Vault!</span>
+                  </>
+                ) : (
+                  <span>Save Template</span>
+                )}
               </button>
             </div>
           </div>

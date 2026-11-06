@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Course, Lesson, QuizQuestion, QuizSettings } from '@/lib/types';
 import { normalizeQuizQuestions, calculateQuizScore, isQuestionAnswered } from '@/lib/quiz-utils';
 import { getContrastTextColor, getContrastSubtextColor } from '@/lib/color-utils';
+import { isBlockDark } from '@/lib/contrast';
 import { TextBlock } from '@/components/editor/blocks/TextBlock';
 import { StatementBlock } from '@/components/editor/blocks/StatementBlock';
 import { QuoteBlock } from '@/components/editor/blocks/QuoteBlock';
@@ -1258,80 +1259,191 @@ export default function CourseReviewPage({
               </div>
             ) : (
               /* ============================================================== */
-              /* C. STANDARD LESSON BLOCK VIEWPORT                             */
+              /* C. STANDARD LESSON BLOCK VIEWPORT (3-LAYER FULL-BLEED ARCHITECTURE) */
               /* ============================================================== */
-              <div className="p-8 sm:p-14 flex-1 flex flex-col justify-between">
+              <div className="w-full flex-1 flex flex-col justify-between pb-16">
                 <div>
-                  <div className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1">
-                    Lesson
+                  {/* Lesson Title Header (Centered 4xl reading width) */}
+                  <div className="max-w-4xl mx-auto px-6 sm:px-10 pt-8 sm:pt-12 mb-6 w-full">
+                    <div className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+                      Lesson
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                      {activeLesson?.title}
+                    </h1>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-8">
-                    {activeLesson?.title}
-                  </h1>
 
-                  {/* Render Blocks with Gated Continue Locking */}
-                  <div className="space-y-6">
+                  {/* Render Blocks as 3-Layer Full-Bleed Sections */}
+                  <div className="w-full">
                     {blocksWithLockStatus.map(({ block, isHidden }, idx) => {
                       if (isHidden) return null;
 
-                      const pt =
-                        block.settings?.paddingTop === 'small'
-                          ? 'pt-4'
-                          : block.settings?.paddingTop === 'large'
-                          ? 'pt-14'
-                          : 'pt-8';
-                      const pb =
-                        block.settings?.paddingBottom === 'small'
-                          ? 'pb-4'
-                          : block.settings?.paddingBottom === 'large'
-                          ? 'pb-14'
-                          : 'pb-8';
+                      const getNumericPadding = (val: unknown, fallback: number) => {
+                        if (typeof val === 'number') return val;
+                        if (val === 'small') return 16;
+                        if (val === 'medium') return 32;
+                        if (val === 'large') return 64;
+                        return fallback;
+                      };
 
-                      const bg =
-                        block.settings?.backgroundColor === 'gray'
-                          ? 'bg-slate-50'
-                          : block.settings?.backgroundColor === 'dark'
-                          ? 'bg-slate-900 text-white'
-                          : block.settings?.backgroundColor === 'brand'
-                          ? 'text-white'
-                          : 'bg-white';
+                      const topPadding = getNumericPadding(block.settings?.paddingTop, 36);
+                      const bottomPadding = getNumericPadding(block.settings?.paddingBottom, 36);
 
-                      const brandStyle =
-                        block.settings?.backgroundColor === 'brand' ? { backgroundColor: accentColor } : {};
+                      const bgType = block.settings?.backgroundColor || 'light';
+                      let bgStyle: React.CSSProperties = {};
+
+                      if (bgType === 'gray') {
+                        bgStyle = { backgroundColor: '#f4f4f5' };
+                      } else if (bgType === 'theme' || bgType === 'brand') {
+                        bgStyle = { backgroundColor: accentColor };
+                      } else if (bgType === 'theme_tint') {
+                        bgStyle = { backgroundColor: `${accentColor}18` };
+                      } else if (bgType === 'dark') {
+                        bgStyle = { backgroundColor: '#18181b' };
+                      } else if (bgType === 'black') {
+                        bgStyle = { backgroundColor: '#000000' };
+                      } else if (bgType === 'custom') {
+                        bgStyle = { backgroundColor: (block.settings?.customBgColor as string) || '#ffffff' };
+                      } else if (bgType === 'image' && block.settings?.bgImage) {
+                        const isParallax = Boolean(block.settings?.bgParallax);
+                        bgStyle = {
+                          backgroundImage: `url(${block.settings.bgImage})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                          backgroundAttachment: isParallax ? 'fixed' : 'scroll',
+                        };
+                      } else {
+                        bgStyle = { backgroundColor: '#ffffff' };
+                      }
+
+                      const isImageBg = bgType === 'image' && Boolean(block.settings?.bgImage);
+                      const overlayColorType =
+                        (block.settings?.bgOverlayColor as string) ||
+                        (block.settings?.bgOverlay === 'light' ? 'white' : 'black');
+                      const overlayOpacity =
+                        typeof block.settings?.bgOverlayOpacity === 'number'
+                          ? block.settings.bgOverlayOpacity
+                          : 40;
+                      const bgBlur =
+                        typeof block.settings?.bgBlur === 'number' ? block.settings.bgBlur : 0;
+                      const overlayBg =
+                        overlayColorType === 'white'
+                          ? '#ffffff'
+                          : overlayColorType === 'theme'
+                          ? accentColor
+                          : '#000000';
+
+                      const isDark = isBlockDark(block.settings);
+
+                      const isGallery = block.category === 'gallery';
+                      const isScenario = block.category === 'interactive' && block.subtype === 'scenario';
+                      const defaultWidthMode = isGallery || isScenario ? 'L' : 'M';
+                      const widthMode = (block.settings?.contentWidth ||
+                        block.settings?.width ||
+                        defaultWidthMode) as 'S' | 'M' | 'L' | 'full';
+
+                      const widthClass =
+                        widthMode === 'S'
+                          ? 'max-w-2xl mx-auto px-4 sm:px-6'
+                          : widthMode === 'full'
+                          ? 'w-full px-0 sm:px-4'
+                          : widthMode === 'L' || isGallery || isScenario
+                          ? 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8'
+                          : 'max-w-3xl mx-auto px-4 sm:px-6';
 
                       return (
-                        <div
+                        <section
                           key={block.id || idx}
-                          className={`${pt} ${pb} px-4 sm:px-6 rounded-2xl ${bg}`}
-                          style={brandStyle}
+                          style={{
+                            paddingTop: `${topPadding}px`,
+                            paddingBottom: `${bottomPadding}px`,
+                            ...bgStyle,
+                          }}
+                          className="relative w-full overflow-hidden transition-all duration-200"
                         >
-                          {block.category === 'text' && (
-                            <TextBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                          {isImageBg && (
+                            <>
+                              <div
+                                className="absolute inset-0 pointer-events-none transition-all duration-300"
+                                style={{
+                                  backgroundColor: overlayBg,
+                                  opacity: overlayOpacity / 100,
+                                  backdropFilter: bgBlur > 0 ? `blur(${bgBlur}px)` : undefined,
+                                  WebkitBackdropFilter: bgBlur > 0 ? `blur(${bgBlur}px)` : undefined,
+                                }}
+                              />
+                              <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/20 via-transparent to-black/25" />
+                            </>
                           )}
-                          {block.category === 'statement' && (
-                            <StatementBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                          )}
-                          {block.category === 'quote' && (
-                            <QuoteBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                          )}
-                          {block.category === 'list' && (
-                            <ListBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                          )}
-                          {block.category === 'image' && (
-                            <ImageBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                          )}
-                          {block.category === 'gallery' && (
-                            <GalleryBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                          )}
-                          {block.category === 'multimedia' && (
-                            block.subtype === 'video' ? (
-                              <VideoBlock
+
+                          <div
+                            className={`relative z-10 w-full ${widthClass} ${
+                              isDark ? 'text-white' : 'text-slate-900'
+                            }`}
+                          >
+                            {block.category === 'text' && (
+                              <TextBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                            {block.category === 'statement' && (
+                              <StatementBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                            {block.category === 'quote' && (
+                              <QuoteBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                            {block.category === 'list' && (
+                              <ListBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                            {block.category === 'image' && (
+                              <ImageBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                            {block.category === 'gallery' && (
+                              <GalleryBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                            {block.category === 'multimedia' && (
+                              block.subtype === 'video' ? (
+                                <VideoBlock
+                                  block={block}
+                                  onChange={() => {}}
+                                  accentColor={accentColor}
+                                  isLearnerMode={true}
+                                  onComplete={() => {
+                                    if (activeLesson && activeLesson.blocks) {
+                                      const nextB = activeLesson.blocks[idx + 1];
+                                      if (nextB && nextB.category === 'divider' && nextB.subtype === 'continue_button') {
+                                        handleUnlockContinue(nextB.id);
+                                      }
+                                    }
+                                  }}
+                                />
+                              ) : (
+                                <MultimediaBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                              )
+                            )}
+                            {block.category === 'divider' && (
+                              <DividerBlock
+                                block={block}
+                                onChange={() => {}}
+                                accentColor={accentColor}
+                                isUnlocked={unlockedContinueIds.has(block.id)}
+                                onContinueClick={() => handleUnlockContinue(block.id)}
+                              />
+                            )}
+                            {block.category === 'code' && (
+                              <CodeBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                            {block.category === 'interactive' && (
+                              <InteractiveBlock
                                 block={block}
                                 onChange={() => {}}
                                 accentColor={accentColor}
                                 isLearnerMode={true}
+                                courseLessons={course?.lessons || []}
+                                onNavigateToLesson={(targetLessonId) => {
+                                  const target = course?.lessons?.find((l) => l.id === targetLessonId);
+                                  if (target) setActiveLessonId(target.id);
+                                }}
                                 onComplete={() => {
-                                  // Unlock continue blocks that depend on video completion
                                   if (activeLesson && activeLesson.blocks) {
                                     const nextB = activeLesson.blocks[idx + 1];
                                     if (nextB && nextB.category === 'divider' && nextB.subtype === 'continue_button') {
@@ -1340,60 +1452,25 @@ export default function CourseReviewPage({
                                   }
                                 }}
                               />
-                            ) : (
-                              <MultimediaBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                            )
-                          )}
-                          {block.category === 'divider' && (
-                            <DividerBlock
-                              block={block}
-                              onChange={() => {}}
-                              accentColor={accentColor}
-                              isUnlocked={unlockedContinueIds.has(block.id)}
-                              onContinueClick={() => handleUnlockContinue(block.id)}
-                            />
-                          )}
-                          {block.category === 'code' && (
-                            <CodeBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                          )}
-                          {block.category === 'interactive' && (
-                            <InteractiveBlock
-                              block={block}
-                              onChange={() => {}}
-                              accentColor={accentColor}
-                              isLearnerMode={true}
-                              courseLessons={course?.lessons || []}
-                              onNavigateToLesson={(targetLessonId) => {
-                                const target = course?.lessons?.find((l) => l.id === targetLessonId);
-                                if (target) setActiveLessonId(target.id);
-                              }}
-                              onComplete={() => {
-                                if (activeLesson && activeLesson.blocks) {
-                                  const nextB = activeLesson.blocks[idx + 1];
-                                  if (nextB && nextB.category === 'divider' && nextB.subtype === 'continue_button') {
-                                    handleUnlockContinue(nextB.id);
-                                  }
-                                }
-                              }}
-                            />
-                          )}
-                          {block.category === 'knowledge_check' && (
-                            <KnowledgeCheckBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                          )}
-                          {block.category === 'survey' && (
-                            <SurveyBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                          )}
-                          {block.category === 'chart' && (
-                            <ChartBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
-                          )}
-                        </div>
+                            )}
+                            {block.category === 'knowledge_check' && (
+                              <KnowledgeCheckBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                            {block.category === 'survey' && (
+                              <SurveyBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                            {block.category === 'chart' && (
+                              <ChartBlock block={block} onChange={() => {}} accentColor={accentColor} isLearnerMode={true} />
+                            )}
+                          </div>
+                        </section>
                       );
                     })}
                   </div>
                 </div>
 
                 {/* Bottom Navigation Banner */}
-                <div className="mt-12 pt-6 border-t border-gray-100 flex items-center justify-between">
+                <div className="max-w-4xl mx-auto px-6 sm:px-10 mt-12 pt-6 border-t border-gray-100 flex items-center justify-between w-full">
                   {prevLesson ? (
                     <button
                       type="button"

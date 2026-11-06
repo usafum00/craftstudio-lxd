@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Block } from '@/lib/types';
+import { isBlockDark } from '@/lib/contrast';
 import {
   ChevronLeft,
   ChevronRight,
@@ -31,6 +32,7 @@ export function GalleryBlock({
   isLearnerMode = false,
 }: GalleryBlockProps) {
   const { subtype, content, settings = {} } = block;
+  const isDark = isBlockDark(settings);
 
   const images: Array<{ url: string; caption: string }> = (content.images as Array<{
     url: string;
@@ -167,7 +169,7 @@ export function GalleryBlock({
             contentEditable={!isLearnerMode}
             suppressContentEditableWarning
             onBlur={(e) => !isLearnerMode && handleUpdateCaption(currentSlide, e.currentTarget.innerText)}
-            className={`text-xs text-gray-500 italic text-center rounded py-1 ${
+            className={`text-xs ${isDark ? 'text-zinc-300' : 'text-gray-500'} italic text-center rounded py-1 ${
               isLearnerMode ? 'outline-none' : 'outline-none focus:ring-1 focus:ring-indigo-500/50'
             }`}
           >
