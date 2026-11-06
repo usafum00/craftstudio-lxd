@@ -24,7 +24,7 @@ import {
   CharacterStyle,
   CharacterPose,
 } from '@/lib/types';
-import { WAIST_FADE_MASK_STYLE, removeBackgroundClient } from '@/lib/bg-removal';
+import { removeBackgroundClient } from '@/lib/bg-removal';
 
 interface CharacterSelectionResult {
   character: CharacterItem;
@@ -41,7 +41,12 @@ interface CharacterPickerModalProps {
   initialPose?: CharacterPose;
 }
 
-const POSE_METADATA: { id: CharacterPose; label: string; desc: string; icon: React.ComponentType<{ className?: string }> }[] = [
+const POSE_METADATA: {
+  id: CharacterPose;
+  label: string;
+  desc: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
   { id: 'neutral', label: 'Neutral', desc: 'Arms crossed, relaxed stance', icon: User },
   { id: 'talking', label: 'Talking', desc: 'Active speaking & explaining', icon: MessageSquare },
   { id: 'happy', label: 'Happy', desc: 'Smiling, approving & encouraging', icon: Smile },
@@ -75,7 +80,6 @@ export default function CharacterPickerModal({
   const [aiClothing, setAiClothing] = useState<CharacterClothing>('business_casual');
   const [aiGender, setAiGender] = useState<CharacterGender>('female');
   const [aiAge, setAiAge] = useState<CharacterAgeGroup>('20s_30s');
-  const [aiEthnicity, setAiEthnicity] = useState('');
   const [aiRole, setAiRole] = useState('');
 
   // Upload state
@@ -151,11 +155,9 @@ export default function CharacterPickerModal({
     setUploadProgress(10);
 
     try {
-      // 1. Try client background removal or fallback to server
       const blob = await removeBackgroundClient(file, (p) => setUploadProgress(p));
       const cleanFile = new File([blob], `cutout-${Date.now()}.png`, { type: 'image/png' });
 
-      // 2. Upload transparent PNG to server
       const formData = new FormData();
       formData.append('file', cleanFile);
 
@@ -168,7 +170,6 @@ export default function CharacterPickerModal({
       const data = await res.json();
       const transparentUrl = data.url;
 
-      // 3. Create character record
       const charName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Custom Character';
       const createRes = await fetch('/api/characters', {
         method: 'POST',
@@ -216,7 +217,7 @@ export default function CharacterPickerModal({
           clothing: aiClothing === 'all' ? 'business_casual' : aiClothing,
           gender: aiGender === 'all' ? 'female' : aiGender,
           ageGroup: aiAge === 'all' ? '20s_30s' : aiAge,
-          ethnicity: aiEthnicity.trim() || 'Diverse',
+          ethnicity: 'Diverse',
           role: aiRole.trim() || 'Professional Specialist',
           style: 'photographic',
           crop: 'half_body',
@@ -240,41 +241,57 @@ export default function CharacterPickerModal({
     }
   };
 
+  const hasActiveFilters =
+    clothingFilter !== 'all' || genderFilter !== 'all' || ageFilter !== 'all' || styleFilter !== 'all' || search.trim() !== '';
+
+  const clearAllFilters = () => {
+    setClothingFilter('all');
+    setGenderFilter('all');
+    setAgeFilter('all');
+    setStyleFilter('all');
+    setSearch('');
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Modal Top Header */}
-        <div className="px-6 py-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50/80">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-150">
+      <div className="relative w-full max-w-5xl bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-zinc-200">
+        {/* Top Header: Articulate Rise Exact Specification */}
+        <div className="px-6 py-4 border-b border-zinc-200 flex items-center justify-between bg-white shrink-0">
           <div className="flex items-center space-x-3">
             {selectedChar && (
               <button
                 onClick={() => setSelectedChar(null)}
-                className="p-1.5 hover:bg-zinc-200 rounded-lg text-zinc-600 transition-colors"
+                className="p-1.5 hover:bg-zinc-100 rounded-lg text-zinc-600 transition-colors"
                 title="Back to all characters"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
             )}
             <div>
-              <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
-                {selectedChar ? `Select Expression for ${selectedChar.name}` : 'Select Character'}
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold uppercase tracking-wider">
-                  Transparent Cutouts
-                </span>
+              <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-900">
+                {selectedChar ? `Select Expression • ${selectedChar.name}` : 'SELECT CHARACTER'}
               </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                {selectedChar
-                  ? 'Pick the posture and expression that best matches your scenario beat.'
-                  : 'Transparent background cutouts that blend seamlessly onto any stage, photo, or card.'}
-              </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {!selectedChar && (
               <>
+                {/* Search Bar */}
+                <div className="relative w-48">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+                  <input
+                    type="text"
+                    placeholder="Search character..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-lg border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-400 bg-white placeholder-zinc-400"
+                  />
+                </div>
+
+                {/* Upload Photo Button */}
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -285,8 +302,8 @@ export default function CharacterPickerModal({
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-zinc-300 text-zinc-700 bg-white hover:bg-zinc-50 transition-colors shadow-sm disabled:opacity-50"
-                  title="Upload photo from Mac and auto-strip to transparent PNG"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-zinc-300 text-zinc-700 bg-white hover:bg-zinc-50 transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                  title="Upload photo and auto-strip background"
                 >
                   {isUploading ? (
                     <>
@@ -301,19 +318,21 @@ export default function CharacterPickerModal({
                   )}
                 </button>
 
+                {/* Visible, High-Contrast Sparkle Button */}
                 <button
                   onClick={() => setShowAiGenerator((prev) => !prev)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors cursor-pointer"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-200" />
-                  <span>✨ Create Custom Cutout</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>✨ Generate Photo Cutout</span>
                 </button>
               </>
             )}
 
+            {/* Close Button */}
             <button
               onClick={onClose}
-              className="p-1.5 hover:bg-zinc-200 rounded-lg text-zinc-500 hover:text-zinc-800 transition-colors"
+              className="p-1.5 hover:bg-zinc-100 rounded-lg text-zinc-400 hover:text-zinc-700 transition-colors ml-1 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -322,48 +341,48 @@ export default function CharacterPickerModal({
 
         {/* AI GENERATOR DRAWER */}
         {showAiGenerator && !selectedChar && (
-          <div className="px-6 py-4 bg-indigo-50/70 border-b border-indigo-100 flex flex-col gap-3 animate-in slide-in-from-top-3 duration-200">
+          <div className="px-6 py-4 bg-indigo-50/80 border-b border-indigo-100 flex flex-col gap-3 animate-in slide-in-from-top-3 duration-200 shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-600" />
-                <h4 className="text-sm font-bold text-indigo-950">
-                  ✨ AI Transparent Cutout Generator
+                <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-950">
+                  AI Photographic Cutout Studio
                 </h4>
-                <span className="text-xs text-indigo-700">
-                  Generates an isolated studio portrait and automatically strips the background into a transparent PNG.
+                <span className="text-xs text-indigo-700 font-normal">
+                  — Generates a photorealistic studio portrait and isolates subject to transparent PNG.
                 </span>
               </div>
               <button
                 onClick={() => setShowAiGenerator(false)}
-                className="text-xs text-indigo-700 hover:text-indigo-950 font-medium"
+                className="text-xs text-indigo-600 hover:text-indigo-900 font-semibold cursor-pointer"
               >
                 Cancel
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-              <div className="col-span-1 md:col-span-2">
-                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Character Name</label>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <div className="md:col-span-2">
+                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Full Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Dr. Maya Lin, Marcus Vance"
+                  placeholder="e.g. Dr. Maya Lin, Craig Thompson"
                   value={aiName}
                   onChange={(e) => setAiName(e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-zinc-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Clothing</label>
+                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Attire / Sector</label>
                 <select
                   value={aiClothing}
                   onChange={(e) => setAiClothing(e.target.value as CharacterClothing)}
                   className="w-full px-2 py-1.5 text-xs rounded-lg border border-zinc-300 bg-white"
                 >
                   <option value="business_casual">Business Casual</option>
-                  <option value="corporate">Corporate Suit</option>
-                  <option value="medical">Medical / Scrubs</option>
-                  <option value="industry">Industry / Safety Vest</option>
+                  <option value="corporate">Corporate (Suits/Blazers)</option>
+                  <option value="industry">Industry (Hard Hat / Vest)</option>
+                  <option value="medical">Medical (Scrubs / Lab Coat)</option>
                   <option value="casual">Casual</option>
                 </select>
               </div>
@@ -381,7 +400,7 @@ export default function CharacterPickerModal({
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Age</label>
+                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">Age Bracket</label>
                 <select
                   value={aiAge}
                   onChange={(e) => setAiAge(e.target.value as CharacterAgeGroup)}
@@ -392,60 +411,58 @@ export default function CharacterPickerModal({
                   <option value="60s_plus">60s+</option>
                 </select>
               </div>
+            </div>
 
-              <div className="flex items-end">
-                <button
-                  onClick={handleGenerateAi}
-                  disabled={isGenerating || !aiName.trim()}
-                  className="w-full py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-xs rounded-lg shadow-sm flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Generating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Generate Cutout</span>
-                    </>
-                  )}
-                </button>
-              </div>
+            <div className="flex justify-end gap-2 mt-1">
+              <button
+                onClick={handleGenerateAi}
+                disabled={isGenerating || !aiName.trim()}
+                className="py-1.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Generating Photorealistic Cutout...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Generate & Add to Library</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         )}
 
         {/* STEP 2: EXPRESSION & POSE PICKER */}
         {selectedChar ? (
-          <div className="p-6 overflow-y-auto flex-1 flex flex-col items-center">
-            {/* Spotlight of selected character */}
-            <div className="flex flex-col md:flex-row items-center gap-6 w-full max-w-3xl mb-8 p-6 bg-gradient-to-b from-zinc-50 to-zinc-100 rounded-2xl border border-zinc-200">
-              <div className="w-48 h-56 relative flex items-end justify-center overflow-hidden rounded-xl bg-white/80 border border-zinc-200/80 shadow-inner">
+          <div className="p-8 overflow-y-auto flex-1 flex flex-col items-center bg-white">
+            <div className="flex flex-col md:flex-row items-center gap-8 w-full max-w-3xl mb-8 p-6 bg-zinc-50 rounded-2xl border border-zinc-200">
+              <div className="w-44 h-52 relative flex items-end justify-center overflow-hidden">
                 <img
                   src={selectedChar.expressions?.[activePose] || selectedChar.transparentPngUrl}
                   alt={selectedChar.name}
-                  className="max-h-52 object-contain drop-shadow-md"
-                  style={WAIST_FADE_MASK_STYLE}
+                  className="max-h-52 object-contain"
                 />
               </div>
 
               <div className="flex-1 text-center md:text-left">
-                <span className="text-xs uppercase tracking-wider font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">
+                <span className="text-xs uppercase tracking-wider font-bold text-zinc-500">
                   {selectedChar.clothing.replace('_', ' ')} • {selectedChar.gender}
                 </span>
-                <h3 className="text-2xl font-black text-zinc-900 mt-2">{selectedChar.name}</h3>
-                <p className="text-sm text-zinc-600 mt-1">{selectedChar.role || 'Scenario Subject'}</p>
+                <h3 className="text-2xl font-bold text-zinc-900 mt-1">{selectedChar.name}</h3>
+                <p className="text-sm text-zinc-600 mt-0.5">{selectedChar.role || 'Scenario Subject'}</p>
                 {selectedChar.ethnicity && (
                   <p className="text-xs text-zinc-400 mt-0.5">{selectedChar.ethnicity}</p>
                 )}
 
                 <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                  <span className="text-xs px-2 py-0.5 bg-zinc-200 text-zinc-700 rounded">
+                  <span className="text-xs px-2.5 py-1 bg-white border border-zinc-200 text-zinc-700 rounded-md font-medium">
                     Age: {selectedChar.ageGroup.replace('_', ' ')}
                   </span>
-                  <span className="text-xs px-2 py-0.5 bg-zinc-200 text-zinc-700 rounded">
-                    Style: {selectedChar.style}
+                  <span className="text-xs px-2.5 py-1 bg-white border border-zinc-200 text-zinc-700 rounded-md font-medium">
+                    Style: Photographic
                   </span>
                 </div>
               </div>
@@ -453,7 +470,7 @@ export default function CharacterPickerModal({
 
             {/* Expression Picker Grid */}
             <div className="w-full max-w-4xl">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-4">
                 Choose Pose / Expression for this Scenario Beat:
               </h4>
 
@@ -469,18 +486,17 @@ export default function CharacterPickerModal({
                         setActivePose(p.id);
                         handleConfirmPose(p.id);
                       }}
-                      className={`relative flex items-center p-3 rounded-xl border text-left transition-all group ${
+                      className={`relative flex items-center p-3 rounded-xl border text-left transition-all cursor-pointer group ${
                         isCurrent
-                          ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-500/20'
+                          ? 'border-zinc-900 bg-zinc-50 ring-1 ring-zinc-900'
                           : 'border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50'
                       }`}
                     >
-                      <div className="w-14 h-16 mr-3 flex-shrink-0 relative flex items-end justify-center rounded-lg bg-zinc-100 border border-zinc-200 overflow-hidden">
+                      <div className="w-14 h-16 mr-3 flex-shrink-0 relative flex items-end justify-center overflow-hidden">
                         <img
                           src={poseUrl}
                           alt={p.label}
-                          className="max-h-14 object-contain"
-                          style={WAIST_FADE_MASK_STYLE}
+                          className="max-h-16 object-contain"
                         />
                       </div>
 
@@ -489,7 +505,7 @@ export default function CharacterPickerModal({
                           <p className="text-sm font-bold text-zinc-900 group-hover:text-indigo-600 transition-colors">
                             {p.label}
                           </p>
-                          {isCurrent && <Check className="w-4 h-4 text-indigo-600" />}
+                          {isCurrent && <Check className="w-4 h-4 text-zinc-900 stroke-[2.5]" />}
                         </div>
                         <p className="text-[11px] text-zinc-500 line-clamp-1">{p.desc}</p>
                       </div>
@@ -500,212 +516,163 @@ export default function CharacterPickerModal({
             </div>
           </div>
         ) : (
-          /* STEP 1: BROWSE ALL CHARACTERS WITH FILTER SIDEBAR */
+          /* STEP 1: BROWSE ALL CHARACTERS WITH ARTICULATE RISE BORDERLESS GRID & CLEAN CHECKMARK SIDEBAR */
           <div className="flex flex-1 overflow-hidden">
-            {/* Left Filter Sidebar */}
-            <aside className="w-60 border-r border-zinc-200 bg-zinc-50/60 p-4 flex flex-col gap-5 overflow-y-auto shrink-0">
-              {/* Search */}
+            {/* Left Filter Sidebar: Rise Exact Vertical Filter List with Checkmarks */}
+            <aside className="w-52 border-r border-zinc-200 bg-white p-5 flex flex-col gap-6 overflow-y-auto shrink-0 select-none">
+              {/* Category 1: Clothing */}
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
-                  Search
-                </label>
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
-                  <input
-                    type="text"
-                    placeholder="Search name, role..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-lg border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                  />
-                </div>
-              </div>
-
-              {/* Clothing Filter */}
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
-                  Clothing
-                </label>
-                <div className="space-y-1">
+                <h3 className="text-xs font-bold text-zinc-900 mb-2">Clothing</h3>
+                <div className="space-y-0.5">
                   {[
                     { id: 'all', label: 'All Clothing' },
                     { id: 'business_casual', label: 'Business Casual' },
                     { id: 'casual', label: 'Casual' },
                     { id: 'corporate', label: 'Corporate' },
-                    { id: 'industry', label: 'Industry & Safety' },
-                    { id: 'medical', label: 'Medical & Scrubs' },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setClothingFilter(item.id as CharacterClothing)}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        clothingFilter === item.id
-                          ? 'bg-zinc-900 text-white font-semibold'
-                          : 'text-zinc-600 hover:bg-zinc-200/70'
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+                    { id: 'industry', label: 'Industry' },
+                    { id: 'medical', label: 'Medical' },
+                  ].map((item) => {
+                    const isSelected = clothingFilter === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setClothingFilter(item.id as CharacterClothing)}
+                        className={`w-full text-left py-1.5 px-2.5 rounded-md text-xs transition-colors flex items-center justify-between cursor-pointer ${
+                          isSelected
+                            ? 'bg-zinc-100 text-zinc-900 font-semibold'
+                            : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                        }`}
+                      >
+                        <span>{item.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-zinc-900 stroke-[2.5]" />}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Gender Filter */}
+              {/* Category 2: Gender */}
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
-                  Gender
-                </label>
-                <div className="grid grid-cols-3 gap-1">
+                <h3 className="text-xs font-bold text-zinc-900 mb-2">Gender</h3>
+                <div className="space-y-0.5">
                   {[
                     { id: 'all', label: 'All' },
                     { id: 'female', label: 'Female' },
                     { id: 'male', label: 'Male' },
-                  ].map((g) => (
-                    <button
-                      key={g.id}
-                      onClick={() => setGenderFilter(g.id as CharacterGender)}
-                      className={`text-center py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        genderFilter === g.id
-                          ? 'bg-zinc-900 text-white font-semibold'
-                          : 'bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-100'
-                      }`}
-                    >
-                      {g.label}
-                    </button>
-                  ))}
+                  ].map((g) => {
+                    const isSelected = genderFilter === g.id;
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setGenderFilter(g.id as CharacterGender)}
+                        className={`w-full text-left py-1.5 px-2.5 rounded-md text-xs transition-colors flex items-center justify-between cursor-pointer ${
+                          isSelected
+                            ? 'bg-zinc-100 text-zinc-900 font-semibold'
+                            : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                        }`}
+                      >
+                        <span>{g.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-zinc-900 stroke-[2.5]" />}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Age Group Filter */}
+              {/* Category 3: Age */}
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
-                  Age Group
-                </label>
-                <div className="space-y-1">
+                <h3 className="text-xs font-bold text-zinc-900 mb-2">Age</h3>
+                <div className="space-y-0.5">
                   {[
                     { id: 'all', label: 'All Ages' },
                     { id: '20s_30s', label: '20s - 30s' },
                     { id: '40s_50s', label: '40s - 50s' },
                     { id: '60s_plus', label: '60s+' },
-                  ].map((a) => (
-                    <button
-                      key={a.id}
-                      onClick={() => setAgeFilter(a.id as CharacterAgeGroup)}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        ageFilter === a.id
-                          ? 'bg-zinc-900 text-white font-semibold'
-                          : 'text-zinc-600 hover:bg-zinc-200/70'
-                      }`}
-                    >
-                      {a.label}
-                    </button>
-                  ))}
+                  ].map((a) => {
+                    const isSelected = ageFilter === a.id;
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => setAgeFilter(a.id as CharacterAgeGroup)}
+                        className={`w-full text-left py-1.5 px-2.5 rounded-md text-xs transition-colors flex items-center justify-between cursor-pointer ${
+                          isSelected
+                            ? 'bg-zinc-100 text-zinc-900 font-semibold'
+                            : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                        }`}
+                      >
+                        <span>{a.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-zinc-900 stroke-[2.5]" />}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Style Filter */}
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
-                  Style
-                </label>
-                <div className="space-y-1">
-                  {[
-                    { id: 'all', label: 'All Styles' },
-                    { id: 'photographic', label: 'Photographic Cutout' },
-                    { id: 'illustrated', label: 'Illustrated Vector' },
-                  ].map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => setStyleFilter(s.id as CharacterStyle)}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        styleFilter === s.id
-                          ? 'bg-zinc-900 text-white font-semibold'
-                          : 'text-zinc-600 hover:bg-zinc-200/70'
-                      }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
+              {hasActiveFilters && (
+                <div className="pt-2 border-t border-zinc-100">
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-[11px] text-zinc-400 hover:text-zinc-700 font-medium cursor-pointer"
+                  >
+                    Reset filters
+                  </button>
                 </div>
-              </div>
+              )}
             </aside>
 
-            {/* Main 4-Column Character Grid */}
-            <main className="flex-1 p-6 overflow-y-auto bg-zinc-100/40">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-medium text-zinc-500">
-                  Showing <strong className="text-zinc-900">{filteredCharacters.length}</strong> transparent characters
-                </span>
-
-                {(clothingFilter !== 'all' || genderFilter !== 'all' || ageFilter !== 'all' || styleFilter !== 'all' || search) && (
-                  <button
-                    onClick={() => {
-                      setClothingFilter('all');
-                      setGenderFilter('all');
-                      setAgeFilter('all');
-                      setStyleFilter('all');
-                      setSearch('');
-                    }}
-                    className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
-                  >
-                    Reset Filters
-                  </button>
-                )}
-              </div>
-
+            {/* Main Character Grid: Articulate Rise Exact Borderless Grid & Hover State */}
+            <main className="flex-1 p-8 overflow-y-auto bg-white">
               {isLoading ? (
                 <div className="h-64 flex flex-col items-center justify-center text-zinc-400">
                   <Loader2 className="w-8 h-8 animate-spin text-zinc-400 mb-2" />
-                  <p className="text-xs">Loading transparent cutout library...</p>
+                  <p className="text-xs">Loading photographic character library...</p>
                 </div>
               ) : filteredCharacters.length === 0 ? (
-                <div className="h-64 flex flex-col items-center justify-center text-zinc-400 bg-white rounded-xl border border-dashed border-zinc-300 p-8">
+                <div className="h-64 flex flex-col items-center justify-center text-zinc-400 p-8 text-center">
                   <User className="w-10 h-10 text-zinc-300 mb-2" />
                   <p className="text-sm font-semibold text-zinc-700">No characters match your filters</p>
-                  <p className="text-xs text-zinc-400 mt-1 mb-4 text-center">
-                    Try broadening your search or click below to generate a custom character.
+                  <p className="text-xs text-zinc-400 mt-1 mb-4">
+                    Try selecting different clothing or age categories, or generate a custom cutout.
                   </p>
                   <button
-                    onClick={() => setShowAiGenerator(true)}
-                    className="px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700"
+                    onClick={clearAllFilters}
+                    className="px-3.5 py-1.5 text-xs font-semibold bg-zinc-100 text-zinc-800 hover:bg-zinc-200 rounded-lg transition-colors cursor-pointer"
                   >
-                    ✨ Create Custom Cutout
+                    Reset Filters
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-8 gap-y-10">
                   {filteredCharacters.map((char) => (
                     <div
                       key={char.id}
                       onClick={() => handleSelectCharacter(char)}
-                      className="group relative bg-white border border-zinc-200/90 hover:border-zinc-300 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center p-3 text-center min-h-[220px]"
+                      className="group relative flex flex-col items-center cursor-pointer select-none"
                     >
-                      {/* Character Transparent Cutout Image */}
-                      <div className="w-full h-36 flex items-end justify-center relative pointer-events-none mb-2">
+                      {/* Character Image Stage with Hover Scrim (Zero black borders) */}
+                      <div className="w-full aspect-[4/5] max-h-52 relative rounded-xl overflow-hidden flex items-end justify-center transition-all">
+                        {/* Real Photographic Human Cutout */}
                         <img
                           src={char.transparentPngUrl}
                           alt={char.name}
-                          className="max-h-36 object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-200"
-                          style={WAIST_FADE_MASK_STYLE}
+                          className="w-full h-full object-contain object-bottom drop-shadow-xs group-hover:scale-105 transition-transform duration-300"
                         />
+
+                        {/* Articulate Rise Hover Overlay (Only visible on hover with centered pill button) */}
+                        <div className="absolute inset-0 bg-zinc-800/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 backdrop-blur-[1px] flex items-center justify-center p-4">
+                          <span className="border-2 border-white text-white bg-zinc-900/60 backdrop-blur-sm px-6 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase shadow-md transform group-hover:scale-105 transition-transform">
+                            SELECT
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Character Details */}
-                      <div className="w-full">
-                        <p className="text-xs font-bold text-zinc-900 group-hover:text-indigo-600 transition-colors">
-                          {char.name}
-                        </p>
-                        <p className="text-[10px] text-zinc-400 truncate mt-0.5">
-                          {char.role || char.clothing.replace('_', ' ')}
-                        </p>
-                      </div>
-
-                      {/* Hover Scrim + Center [ SELECT ] Pill Button (Matching Articulate Rise exactly) */}
-                      <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3 backdrop-blur-[0.5px]">
-                        <span className="px-4 py-1.5 bg-white text-zinc-950 font-black text-xs tracking-wider uppercase rounded-full shadow-lg transform group-hover:scale-105 transition-transform">
-                          SELECT
-                        </span>
-                      </div>
+                      {/* Centered Name Below (Matching Rise's 15px font) */}
+                      <p className="mt-3 text-[15px] font-medium text-zinc-800 text-center tracking-tight group-hover:text-zinc-950 transition-colors">
+                        {char.name}
+                      </p>
                     </div>
                   ))}
                 </div>
