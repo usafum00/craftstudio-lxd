@@ -82,3 +82,17 @@ body {
 .animate-shake {
   animation: shake 0.5s ease-in-out;
 }
+
+/* Character Select Card Scrim: strictly hidden until hovered */
+.character-select-scrim {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.group:hover .character-select-scrim {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto;
+}

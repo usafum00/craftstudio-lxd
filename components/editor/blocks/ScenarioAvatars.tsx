@@ -201,9 +201,6 @@ export function ScenarioCharacterFigure({
 
   return (
     <div className={`relative flex flex-col items-center justify-end select-none ${className}`}>
-      {/* Ground Silhouette Shadow */}
-      <div className="absolute -bottom-2 inset-x-8 h-6 bg-black/70 blur-xl rounded-full pointer-events-none" />
-
       {isCutout ? (
         /* True Transparent Cutout Figure grounded directly on the stage (NO floating forehead badges or chest boxes) */
         <div className="relative flex flex-col items-center justify-end">
@@ -211,7 +208,7 @@ export function ScenarioCharacterFigure({
           <img
             src={photo}
             alt={characterName}
-            className={`w-auto object-contain drop-shadow-2xl transition-all duration-300 hover:scale-[1.01] ${
+            className={`w-auto object-contain object-bottom drop-shadow-2xl transition-all duration-300 hover:scale-[1.01] ${
               framing === 'full_body'
                 ? 'max-h-[500px] md:max-h-[560px]'
                 : 'max-h-[440px] md:max-h-[500px]'

@@ -1,0 +1,383 @@
+[
+  {
+    "id": "char-jet",
+    "name": "Jet",
+    "gender": "male",
+    "clothing": "business_casual",
+    "ageGroup": "20s_30s",
+    "ethnicity": "Asian",
+    "role": "Product Success Manager & Solutions Architect",
+    "folder": "jet",
+    "poses": {
+      "neutral": {
+        "halfUrl": "/characters/jet/neutral.png?v=2",
+        "fullUrl": "/characters/jet/neutral-full.png?v=2",
+        "hash": "b47c06457a436794fb79dd1bd1d11a16708eba825cc8b9522d8fc3bbec75ceec"
+      },
+      "happy": {
+        "halfUrl": "/characters/jet/happy.png?v=2",
+        "fullUrl": "/characters/jet/happy-full.png?v=2",
+        "hash": "b5aef7973c1940329f07c3e5b3592417dec5b27991f01dc74c3272238e4f1159"
+      },
+      "talking": {
+        "halfUrl": "/characters/jet/talking.png?v=2",
+        "fullUrl": "/characters/jet/talking-full.png?v=2",
+        "hash": "9a50f8e3e328ca5c9ef87eeb3868169bd2414b37f31802c97f5ccc382f5556f7"
+      },
+      "worried": {
+        "halfUrl": "/characters/jet/worried.png?v=2",
+        "fullUrl": "/characters/jet/worried-full.png?v=2",
+        "hash": "dbdb5f5b38a3da796fc791c78bf91cf5338597314f16baa4f293ebf79d4f5eb2"
+      },
+      "frustrated": {
+        "halfUrl": "/characters/jet/frustrated.png?v=2",
+        "fullUrl": "/characters/jet/frustrated-full.png?v=2",
+        "hash": "8c4e848d344978838c330e5d89a54c5159648160a165fb81de8252b8299d4a90"
+      },
+      "confused": {
+        "halfUrl": "/characters/jet/confused.png?v=2",
+        "fullUrl": "/characters/jet/confused-full.png?v=2",
+        "hash": "146e5003900bcd0395c2f90d645410fe17aefd1774e434e69824bfbbf06461dd"
+      },
+      "presenting": {
+        "halfUrl": "/characters/jet/presenting.png?v=2",
+        "fullUrl": "/characters/jet/presenting-full.png?v=2",
+        "hash": "944ad171c0a3cd057148e9b8b8eeae54c89cfff1016ea93089db912b607b50ac"
+      }
+    }
+  },
+  {
+    "id": "char-terri",
+    "name": "Terri",
+    "gender": "female",
+    "clothing": "corporate",
+    "ageGroup": "40s_50s",
+    "ethnicity": "Black",
+    "role": "VP Enterprise Operations & People Strategy",
+    "folder": "terri",
+    "poses": {
+      "neutral": {
+        "halfUrl": "/characters/terri/neutral.png?v=2",
+        "fullUrl": "/characters/terri/neutral-full.png?v=2",
+        "hash": "630137b11cc75fb66359e3b54799ec4341b316453749c7a6d6aba73ab739b818"
+      },
+      "happy": {
+        "halfUrl": "/characters/terri/happy.png?v=2",
+        "fullUrl": "/characters/terri/happy-full.png?v=2",
+        "hash": "77ac1e0309b9fc83378ee9d2c8b0f627e25377df72356508fcdec91da9a8685c"
+      },
+      "talking": {
+        "halfUrl": "/characters/terri/talking.png?v=2",
+        "fullUrl": "/characters/terri/talking-full.png?v=2",
+        "hash": "5a94a0ff8fed4197d235b3356717952fb589e045eec9c137b6b1cdaac0deb1ae"
+      },
+      "worried": {
+        "halfUrl": "/characters/terri/worried.png?v=2",
+        "fullUrl": "/characters/terri/worried-full.png?v=2",
+        "hash": "57fd7957ba0a1b6f9533e1e061ac5633d077838de8edeccf58fd30374288ad13"
+      },
+      "frustrated": {
+        "halfUrl": "/characters/terri/frustrated.png?v=2",
+        "fullUrl": "/characters/terri/frustrated-full.png?v=2",
+        "hash": "6ae608d29eb162d1dde165042c89c678a8c026523bb9f0e5f6540c70fe6eae5a"
+      },
+      "confused": {
+        "halfUrl": "/characters/terri/confused.png?v=2",
+        "fullUrl": "/characters/terri/confused-full.png?v=2",
+        "hash": "6815122967a39311c746a2368a6b2cadfd86344969c2251617b45d374d6b6fb0"
+      },
+      "presenting": {
+        "halfUrl": "/characters/terri/presenting.png?v=2",
+        "fullUrl": "/characters/terri/presenting-full.png?v=2",
+        "hash": "2f49259e167644158cccb3d01be40c0af5bee63d13955bb13f43491a92e9a791"
+      }
+    }
+  },
+  {
+    "id": "char-jeremy",
+    "name": "Jeremy",
+    "gender": "male",
+    "clothing": "corporate",
+    "ageGroup": "20s_30s",
+    "ethnicity": "White",
+    "role": "Enterprise Strategy Director & Compliance Lead",
+    "folder": "jeremy",
+    "poses": {
+      "neutral": {
+        "halfUrl": "/characters/jeremy/neutral.png?v=2",
+        "fullUrl": "/characters/jeremy/neutral-full.png?v=2",
+        "hash": "8c8e6f4e17e0d320da3961fd16755de9a415fed0c4b769984bbd9b293385786b"
+      },
+      "happy": {
+        "halfUrl": "/characters/jeremy/happy.png?v=2",
+        "fullUrl": "/characters/jeremy/happy-full.png?v=2",
+        "hash": "96c403c2c1a9bed5277f2179a1787fb144652f47591a7d622111ae4bb211bd60"
+      },
+      "talking": {
+        "halfUrl": "/characters/jeremy/talking.png?v=2",
+        "fullUrl": "/characters/jeremy/talking-full.png?v=2",
+        "hash": "b6a9beab3c69a5b1e385acb727d3d2a531cce6341bb4bb73f33faa024dea9a37"
+      },
+      "worried": {
+        "halfUrl": "/characters/jeremy/worried.png?v=2",
+        "fullUrl": "/characters/jeremy/worried-full.png?v=2",
+        "hash": "37937a6f9919d9b33cb8fb3fb302d7de9f8b3fa5cdb953bd18d515ffcf374fb6"
+      },
+      "frustrated": {
+        "halfUrl": "/characters/jeremy/frustrated.png?v=2",
+        "fullUrl": "/characters/jeremy/frustrated-full.png?v=2",
+        "hash": "351087fa7875333757313cab0b0ad844a4783261a87e1bc64d2d88345d6c99c2"
+      },
+      "confused": {
+        "halfUrl": "/characters/jeremy/confused.png?v=2",
+        "fullUrl": "/characters/jeremy/confused-full.png?v=2",
+        "hash": "b227dfd94ed99ca1becb897e7529b8e8eaccf0d52a66274fcb5c919e267506ce"
+      },
+      "presenting": {
+        "halfUrl": "/characters/jeremy/presenting.png?v=2",
+        "fullUrl": "/characters/jeremy/presenting-full.png?v=2",
+        "hash": "633c4dad9dd96ee3a383b9059cf5bb9dd902d3658926b0babb877086e6a0ff64"
+      }
+    }
+  },
+  {
+    "id": "char-elena",
+    "name": "Dr. Elena Ramos",
+    "gender": "female",
+    "clothing": "medical",
+    "ageGroup": "20s_30s",
+    "ethnicity": "Latina",
+    "role": "Chief Medical Officer & Clinical Specialist",
+    "folder": "elena",
+    "poses": {
+      "neutral": {
+        "halfUrl": "/characters/elena/neutral.png?v=2",
+        "fullUrl": "/characters/elena/neutral-full.png?v=2",
+        "hash": "bd3808ae2b79a9aca509f908e40c0baf6d484cb8c4afaecf511500c0dc109f84"
+      },
+      "happy": {
+        "halfUrl": "/characters/elena/happy.png?v=2",
+        "fullUrl": "/characters/elena/happy-full.png?v=2",
+        "hash": "f69e81cd61928e3aa61698fd1d912bff0a233a548162d80e3d72aecfb3e1314b"
+      },
+      "talking": {
+        "halfUrl": "/characters/elena/talking.png?v=2",
+        "fullUrl": "/characters/elena/talking-full.png?v=2",
+        "hash": "e299298b7e46874a72a2d9daf84b24a1af8fe653a5f8a23f8d957f76531e81e1"
+      },
+      "worried": {
+        "halfUrl": "/characters/elena/worried.png?v=2",
+        "fullUrl": "/characters/elena/worried-full.png?v=2",
+        "hash": "65d3a8d3be915aeea71d3016592db0aa58940cdeda117c12e45c4dfc1f57d9c0"
+      },
+      "frustrated": {
+        "halfUrl": "/characters/elena/frustrated.png?v=2",
+        "fullUrl": "/characters/elena/frustrated-full.png?v=2",
+        "hash": "148d78bf59873365b53c67d5a8a72fcdec105f611d3b2e471852ce600f83ae62"
+      },
+      "confused": {
+        "halfUrl": "/characters/elena/confused.png?v=2",
+        "fullUrl": "/characters/elena/confused-full.png?v=2",
+        "hash": "0ee5eb56521ac940aa6c7f2aa610180a0df791ae6b041235d497b8c7ca79a123"
+      },
+      "presenting": {
+        "halfUrl": "/characters/elena/presenting.png?v=2",
+        "fullUrl": "/characters/elena/presenting-full.png?v=2",
+        "hash": "0b973e19c36eb54f14cce27e4ed04a4e3993222dfd6f5323b24cdcec67260ded"
+      }
+    },
+    "attire": "medical"
+  },
+  {
+    "id": "char-marcus",
+    "name": "Marcus Vance",
+    "gender": "male",
+    "clothing": "industry",
+    "ageGroup": "20s_30s",
+    "ethnicity": "Black",
+    "role": "Lead Industrial Safety Engineer & Field Inspector",
+    "folder": "marcus",
+    "poses": {
+      "neutral": {
+        "halfUrl": "/characters/marcus/neutral.png?v=2",
+        "fullUrl": "/characters/marcus/neutral-full.png?v=2",
+        "hash": "787ca5b14979c783bd7446364c290ffcab7ae8709b2439ced680aa43b520df42"
+      },
+      "happy": {
+        "halfUrl": "/characters/marcus/happy.png?v=2",
+        "fullUrl": "/characters/marcus/happy-full.png?v=2",
+        "hash": "4f0ed84bd34971f0d420dc331a5e86f63455dd1657367620f3aec37a561ffcc8"
+      },
+      "talking": {
+        "halfUrl": "/characters/marcus/talking.png?v=2",
+        "fullUrl": "/characters/marcus/talking-full.png?v=2",
+        "hash": "93b5217927fd53247410ca9d91ba9f71e0ded902648fd9bf9eb51bbe116bd5f5"
+      },
+      "worried": {
+        "halfUrl": "/characters/marcus/worried.png?v=2",
+        "fullUrl": "/characters/marcus/worried-full.png?v=2",
+        "hash": "96b6e6c84883345a76eb025496aee407e17545a16709d2f1a3dd747436ba587f"
+      },
+      "frustrated": {
+        "halfUrl": "/characters/marcus/frustrated.png?v=2",
+        "fullUrl": "/characters/marcus/frustrated-full.png?v=2",
+        "hash": "3b3ffd080e7a578430d206997ff2cd9b62ef5df2433bd89d2998e38ae1579dd2"
+      },
+      "confused": {
+        "halfUrl": "/characters/marcus/confused.png?v=2",
+        "fullUrl": "/characters/marcus/confused-full.png?v=2",
+        "hash": "5945bfbe024cec0d5a15640b20311765cc751b23b288b9db41bc5f7cede95703"
+      },
+      "presenting": {
+        "halfUrl": "/characters/marcus/presenting.png?v=2",
+        "fullUrl": "/characters/marcus/presenting-full.png?v=2",
+        "hash": "bbdfc8a4d5d3ad562028bcd5330f94883025ead219086fcb14d6d0b6e4a7aa85"
+      }
+    },
+    "attire": "industry"
+  },
+  {
+    "id": "char-maya",
+    "name": "Maya Patel",
+    "gender": "female",
+    "clothing": "casual",
+    "ageGroup": "20s_30s",
+    "ethnicity": "South Asian",
+    "role": "Lead UX Designer & Creative Technologist",
+    "folder": "maya",
+    "poses": {
+      "neutral": {
+        "halfUrl": "/characters/maya/neutral.png?v=2",
+        "fullUrl": "/characters/maya/neutral-full.png?v=2",
+        "hash": "eb55b2831ce244302759474bee9629aafbd6cd7934238b2ca5194b8077e96862"
+      },
+      "happy": {
+        "halfUrl": "/characters/maya/happy.png?v=2",
+        "fullUrl": "/characters/maya/happy-full.png?v=2",
+        "hash": "216c36fee1fae9ab8e1d3a1d68059d5baec8d31b5c55cbe36ca0302272b697df"
+      },
+      "talking": {
+        "halfUrl": "/characters/maya/talking.png?v=2",
+        "fullUrl": "/characters/maya/talking-full.png?v=2",
+        "hash": "aba04e1c7260061b17a6fe9f9b742800c4ba35cd37807ea84070cd503226665c"
+      },
+      "worried": {
+        "halfUrl": "/characters/maya/worried.png?v=2",
+        "fullUrl": "/characters/maya/worried-full.png?v=2",
+        "hash": "5f9bb5094301beb0c4283a1c7305996ec3b2839b74dc2cd8d9b9249d4ba7b8d0"
+      },
+      "frustrated": {
+        "halfUrl": "/characters/maya/frustrated.png?v=2",
+        "fullUrl": "/characters/maya/frustrated-full.png?v=2",
+        "hash": "c3ab28ffe5e2f00f6f43c2568243b281b422c19310a10887088d10236a31008e"
+      },
+      "confused": {
+        "halfUrl": "/characters/maya/confused.png?v=2",
+        "fullUrl": "/characters/maya/confused-full.png?v=2",
+        "hash": "dbbb0989f08969955721c30e8a5c4b3925907f8438b7edeeebfecfe4abd4ded9"
+      },
+      "presenting": {
+        "halfUrl": "/characters/maya/presenting.png?v=2",
+        "fullUrl": "/characters/maya/presenting-full.png?v=2",
+        "hash": "cec0e1bce36ee3cb27db0ebacbdc4717bcf1905e51f977341fcf384c3ce21f07"
+      }
+    },
+    "attire": "casual"
+  },
+  {
+    "id": "char-arthur",
+    "name": "Arthur Sterling",
+    "gender": "male",
+    "clothing": "corporate",
+    "ageGroup": "60s_plus",
+    "ethnicity": "White",
+    "role": "Executive Managing Partner & Board Advisor",
+    "folder": "arthur",
+    "poses": {
+      "neutral": {
+        "halfUrl": "/characters/arthur/neutral.png?v=2",
+        "fullUrl": "/characters/arthur/neutral-full.png?v=2",
+        "hash": "92561afc3e7248d4f047392ae36a50da28e4677a405bab4548839b3e1009d59f"
+      },
+      "happy": {
+        "halfUrl": "/characters/arthur/happy.png?v=2",
+        "fullUrl": "/characters/arthur/happy-full.png?v=2",
+        "hash": "37215bb6d65398fe71b0554bd7c7c73348f67df132dbd051de55b94debc63614"
+      },
+      "talking": {
+        "halfUrl": "/characters/arthur/talking.png?v=2",
+        "fullUrl": "/characters/arthur/talking-full.png?v=2",
+        "hash": "cae9950480303610f95f9778319d0750849feea7199039adfa922ff83da9cbd1"
+      },
+      "worried": {
+        "halfUrl": "/characters/arthur/worried.png?v=2",
+        "fullUrl": "/characters/arthur/worried-full.png?v=2",
+        "hash": "c8ae52bbbf4fd97b5a7b3f3a4789761a074e1b65894fa51ac3b24853c954e159"
+      },
+      "frustrated": {
+        "halfUrl": "/characters/arthur/frustrated.png?v=2",
+        "fullUrl": "/characters/arthur/frustrated-full.png?v=2",
+        "hash": "0aa81af691287775963f0395c20e21df12f3a7fbe69b1de495995e13f94e499d"
+      },
+      "confused": {
+        "halfUrl": "/characters/arthur/confused.png?v=2",
+        "fullUrl": "/characters/arthur/confused-full.png?v=2",
+        "hash": "436a5d1e482b0eba1485d6c667b4f87fd2293dd04906ae174bc2ce832932e458"
+      },
+      "presenting": {
+        "halfUrl": "/characters/arthur/presenting.png?v=2",
+        "fullUrl": "/characters/arthur/presenting-full.png?v=2",
+        "hash": "8f11f3731fcdb304522d92a009cd8c66d92da1053ab402872acd30429764df8f"
+      }
+    },
+    "attire": "senior_corporate"
+  },
+  {
+    "id": "char-sarah",
+    "name": "Sarah Jenkins",
+    "gender": "female",
+    "clothing": "business_casual",
+    "ageGroup": "40s_50s",
+    "ethnicity": "White",
+    "role": "Director of People Operations & Talent Development",
+    "folder": "sarah",
+    "poses": {
+      "neutral": {
+        "halfUrl": "/characters/sarah/neutral.png?v=2",
+        "fullUrl": "/characters/sarah/neutral-full.png?v=2",
+        "hash": "630137b11cc75fb66359e3b54799ec4341b316453749c7a6d6aba73ab739b818"
+      },
+      "happy": {
+        "halfUrl": "/characters/sarah/happy.png?v=2",
+        "fullUrl": "/characters/sarah/happy-full.png?v=2",
+        "hash": "77ac1e0309b9fc83378ee9d2c8b0f627e25377df72356508fcdec91da9a8685c"
+      },
+      "talking": {
+        "halfUrl": "/characters/sarah/talking.png?v=2",
+        "fullUrl": "/characters/sarah/talking-full.png?v=2",
+        "hash": "5a94a0ff8fed4197d235b3356717952fb589e045eec9c137b6b1cdaac0deb1ae"
+      },
+      "worried": {
+        "halfUrl": "/characters/sarah/worried.png?v=2",
+        "fullUrl": "/characters/sarah/worried-full.png?v=2",
+        "hash": "6815122967a39311c746a2368a6b2cadfd86344969c2251617b45d374d6b6fb0"
+      },
+      "frustrated": {
+        "halfUrl": "/characters/sarah/frustrated.png?v=2",
+        "fullUrl": "/characters/sarah/frustrated-full.png?v=2",
+        "hash": "6ae608d29eb162d1dde165042c89c678a8c026523bb9f0e5f6540c70fe6eae5a"
+      },
+      "confused": {
+        "halfUrl": "/characters/sarah/confused.png?v=2",
+        "fullUrl": "/characters/sarah/confused-full.png?v=2",
+        "hash": "57fd7957ba0a1b6f9533e1e061ac5633d077838de8edeccf58fd30374288ad13"
+      },
+      "presenting": {
+        "halfUrl": "/characters/sarah/presenting.png?v=2",
+        "fullUrl": "/characters/sarah/presenting-full.png?v=2",
+        "hash": "2f49259e167644158cccb3d01be40c0af5bee63d13955bb13f43491a92e9a791"
+      }
+    },
+    "attire": "business_casual"
+  }
+]

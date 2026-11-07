@@ -312,10 +312,11 @@ function initDb(db: Database.Database) {
     seedMediaAssets(db);
   }
 
-  // Check if characters seeded
+  // Check if characters seeded (ensure exactly our 8 clean flagship characters)
   try {
     const charCount = db.prepare('SELECT COUNT(*) as count FROM characters').get() as { count: number };
-    if (charCount.count === 0) {
+    const invalidChar = db.prepare("SELECT COUNT(*) as count FROM characters WHERE id NOT IN ('char-jet', 'char-terri', 'char-jeremy', 'char-elena', 'char-marcus', 'char-maya', 'char-arthur', 'char-sarah')").get() as { count: number };
+    if (charCount.count !== 8 || invalidChar.count > 0) {
       seedInitialCharacters(db);
     }
   } catch (err) {
@@ -2507,40 +2508,105 @@ export function getCreditLogs(limit = 20): CreditLog[] {
 }
 
 // ==========================================
-// CHARACTER CUTOUT LIBRARY
+// CHARACTER CUTOUT LIBRARY (8 Flagship Curated Characters with 6 Distinct Expressions)
 // ==========================================
 
 const SEED_CHARACTERS = [
-  { id: 'char-jet', name: 'Jet', gender: 'male', clothing: 'business_casual', ageGroup: '20s_30s', ethnicity: 'Asian', role: 'Product Success Manager', isAuthenticSet: true },
-  { id: 'char-terri', name: 'Terri', gender: 'female', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'Black', role: 'VP Enterprise Operations', isAuthenticSet: true },
-  { id: 'char-jeremy', name: 'Jeremy', gender: 'male', clothing: 'corporate', ageGroup: '20s_30s', ethnicity: 'White', role: 'Enterprise Strategy Director', isAuthenticSet: true },
-  { id: 'char-craig', name: 'Craig', gender: 'male', clothing: 'industry', ageGroup: '20s_30s', ethnicity: 'White', role: 'Safety & Field Operations Lead' },
-  { id: 'char-lange', name: 'Lange', gender: 'male', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'Black', role: 'Executive Managing Director' },
-  { id: 'char-renita', name: 'Renita', gender: 'female', clothing: 'medical', ageGroup: '20s_30s', ethnicity: 'South Asian', role: 'Lead ER Physician & Trauma Specialist' },
-  { id: 'char-gianna', name: 'Gianna', gender: 'female', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'Latina', role: 'Senior Partner & General Legal Counsel' },
-  { id: 'char-robert', name: 'Robert', gender: 'male', clothing: 'casual', ageGroup: '20s_30s', ethnicity: 'White', role: 'Senior Full-Stack Engineer' },
-  { id: 'char-laura', name: 'Laura', gender: 'female', clothing: 'casual', ageGroup: '20s_30s', ethnicity: 'Black', role: 'Lead Product & UX Designer' },
-  { id: 'char-jonathan', name: 'Jonathan', gender: 'male', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'White', role: 'Financial Strategy & Risk Director' },
-  { id: 'char-andrea', name: 'Andrea', gender: 'female', clothing: 'industry', ageGroup: '20s_30s', ethnicity: 'Asian', role: 'Infrastructure Safety Inspector' },
-  { id: 'char-tony', name: 'Tony', gender: 'male', clothing: 'industry', ageGroup: '40s_50s', ethnicity: 'Latino', role: 'Plant Maintenance Director' },
-  { id: 'char-joseph', name: 'Joseph', gender: 'male', clothing: 'casual', ageGroup: '40s_50s', ethnicity: 'Black', role: 'Agile Coach & Scrum Master' },
-  { id: 'char-emily', name: 'Emily', gender: 'female', clothing: 'casual', ageGroup: '20s_30s', ethnicity: 'Asian', role: 'Creative Brand Director' },
-  { id: 'char-deshaun', name: 'DeShaun', gender: 'male', clothing: 'business_casual', ageGroup: '20s_30s', ethnicity: 'Black', role: 'Omnichannel Store Operations Lead' },
-  { id: 'char-maya', name: 'Dr. Maya Lin', gender: 'female', clothing: 'medical', ageGroup: '20s_30s', ethnicity: 'South Asian', role: 'Chief Medical Officer & Surgeon' },
-  { id: 'char-carlos', name: 'Dr. Carlos Mendoza', gender: 'male', clothing: 'medical', ageGroup: '40s_50s', ethnicity: 'Latino', role: 'ICU & Anesthesiology Department Head' },
-  { id: 'char-priya', name: 'Priya Sharma', gender: 'female', clothing: 'medical', ageGroup: '20s_30s', ethnicity: 'South Asian', role: 'Clinical Pharmacology Researcher' },
-  { id: 'char-elizabeth', name: 'Dr. Elizabeth Hayes', gender: 'female', clothing: 'medical', ageGroup: '60s_plus', ethnicity: 'White', role: 'Chair of Internal Medicine' },
-  { id: 'char-kofi', name: 'Kofi Mensah', gender: 'male', clothing: 'industry', ageGroup: '20s_30s', ethnicity: 'Black', role: 'Senior Field Electrical Engineer' },
-  { id: 'char-soren', name: 'Soren Lindqvist', gender: 'male', clothing: 'industry', ageGroup: '60s_plus', ethnicity: 'White', role: 'Master Plant Engineer & Safety Auditor' },
-  { id: 'char-david', name: 'David Sterling', gender: 'male', clothing: 'corporate', ageGroup: '40s_50s', ethnicity: 'White', role: 'Senior Managing Director' },
-  { id: 'char-amara', name: 'Amara Okafor', gender: 'female', clothing: 'business_casual', ageGroup: '20s_30s', ethnicity: 'Black', role: 'Director of People & Culture' },
-  { id: 'char-fatima', name: 'Fatima Al-Mansoor', gender: 'female', clothing: 'corporate', ageGroup: '20s_30s', ethnicity: 'Middle Eastern', role: 'VP Enterprise Client Relations' },
-  { id: 'char-antonio', name: 'Antonio Morales', gender: 'male', clothing: 'corporate', ageGroup: '20s_30s', ethnicity: 'Latino', role: 'Corporate Compliance & Ethics Officer' },
-  { id: 'char-elena', name: 'Elena Rostova', gender: 'female', clothing: 'business_casual', ageGroup: '40s_50s', ethnicity: 'Latina', role: 'Chief Customer Experience Officer' },
-  { id: 'char-chen', name: 'Dr. Chen Wei', gender: 'male', clothing: 'corporate', ageGroup: '60s_plus', ethnicity: 'Asian', role: 'Chief Technology Officer & Emeritus VP' },
+  {
+    id: 'char-jet',
+    name: 'Jet',
+    gender: 'male',
+    clothing: 'business_casual',
+    ageGroup: '20s_30s',
+    ethnicity: 'Asian',
+    role: 'Product Success Manager & Solutions Architect',
+    folder: 'jet',
+  },
+  {
+    id: 'char-terri',
+    name: 'Terri',
+    gender: 'female',
+    clothing: 'corporate',
+    ageGroup: '40s_50s',
+    ethnicity: 'Black',
+    role: 'VP Enterprise Operations & People Strategy',
+    folder: 'terri',
+  },
+  {
+    id: 'char-jeremy',
+    name: 'Jeremy',
+    gender: 'male',
+    clothing: 'corporate',
+    ageGroup: '20s_30s',
+    ethnicity: 'White',
+    role: 'Enterprise Strategy Director & Compliance Lead',
+    folder: 'jeremy',
+  },
+  {
+    id: 'char-elena',
+    name: 'Dr. Elena Ramos',
+    gender: 'female',
+    clothing: 'medical',
+    ageGroup: '20s_30s',
+    ethnicity: 'Latina',
+    role: 'Chief Medical Officer & Clinical Specialist',
+    folder: 'elena',
+  },
+  {
+    id: 'char-marcus',
+    name: 'Marcus Vance',
+    gender: 'male',
+    clothing: 'industry',
+    ageGroup: '20s_30s',
+    ethnicity: 'Black',
+    role: 'Lead Industrial Safety Engineer & Field Inspector',
+    folder: 'marcus',
+  },
+  {
+    id: 'char-maya',
+    name: 'Maya Patel',
+    gender: 'female',
+    clothing: 'casual',
+    ageGroup: '20s_30s',
+    ethnicity: 'South Asian',
+    role: 'Lead UX Designer & Creative Technologist',
+    folder: 'maya',
+  },
+  {
+    id: 'char-arthur',
+    name: 'Arthur Sterling',
+    gender: 'male',
+    clothing: 'corporate',
+    ageGroup: '60s_plus',
+    ethnicity: 'White',
+    role: 'Executive Managing Partner & Board Advisor',
+    folder: 'arthur',
+  },
+  {
+    id: 'char-sarah',
+    name: 'Sarah Jenkins',
+    gender: 'female',
+    clothing: 'business_casual',
+    ageGroup: '40s_50s',
+    ethnicity: 'White',
+    role: 'Director of People Operations & Talent Development',
+    folder: 'sarah',
+  },
 ];
 
 export function seedInitialCharacters(db: Database.Database) {
+  // Purge any legacy unverified characters first
+  try {
+    db.prepare(`
+      DELETE FROM characters 
+      WHERE id NOT IN ('char-jet', 'char-terri', 'char-jeremy', 'char-elena', 'char-marcus', 'char-maya', 'char-arthur', 'char-sarah')
+         OR transparent_png_url LIKE '%unsplash%'
+         OR transparent_png_url LIKE '%char-%'
+    `).run();
+  } catch (purgeErr) {
+    console.warn('Character table purge note:', purgeErr);
+  }
+
   const insert = db.prepare(`
     INSERT OR REPLACE INTO characters (
       id, name, gender, clothing, age_group, style, crop, ethnicity, role,
@@ -2550,57 +2616,19 @@ export function seedInitialCharacters(db: Database.Database) {
 
   const now = new Date().toISOString();
   for (const c of SEED_CHARACTERS) {
-    let pngUrl = `/uploads/characters/${c.id}.png`;
-    let expressions: string;
-
-    if (c.id === 'char-jet') {
-      pngUrl = '/uploads/characters/jet-neutral-half.png';
-      expressions = JSON.stringify({
-        neutral: '/uploads/characters/jet-neutral-half.png',
-        talking: '/uploads/characters/jet-talking-half.png',
-        happy: '/uploads/characters/jet-happy-half.png',
-        concerned: '/uploads/characters/jet-worried-half.png',
-        worried: '/uploads/characters/jet-worried-half.png',
-        frustrated: '/uploads/characters/jet-frustrated-half.png',
-        confused: '/uploads/characters/jet-confused-half.png',
-        presenting: '/uploads/characters/jet-presenting-half.png',
-      });
-    } else if (c.id === 'char-terri') {
-      pngUrl = '/uploads/characters/terri-neutral-half.png';
-      expressions = JSON.stringify({
-        neutral: '/uploads/characters/terri-neutral-half.png',
-        talking: '/uploads/characters/terri-talking-half.png',
-        happy: '/uploads/characters/terri-happy-half.png',
-        concerned: '/uploads/characters/terri-worried-half.png',
-        worried: '/uploads/characters/terri-worried-half.png',
-        frustrated: '/uploads/characters/terri-frustrated-half.png',
-        confused: '/uploads/characters/terri-confused-half.png',
-        presenting: '/uploads/characters/terri-presenting-half.png',
-      });
-    } else if (c.id === 'char-jeremy' || c.id === 'char-david') {
-      pngUrl = '/uploads/characters/jeremy-neutral-half.png';
-      expressions = JSON.stringify({
-        neutral: '/uploads/characters/jeremy-neutral-half.png',
-        talking: '/uploads/characters/jeremy-talking-half.png',
-        happy: '/uploads/characters/jeremy-happy-half.png',
-        concerned: '/uploads/characters/jeremy-worried-half.png',
-        worried: '/uploads/characters/jeremy-worried-half.png',
-        frustrated: '/uploads/characters/jeremy-frustrated-half.png',
-        confused: '/uploads/characters/jeremy-confused-half.png',
-        presenting: '/uploads/characters/jeremy-presenting-half.png',
-      });
-    } else {
-      expressions = JSON.stringify({
-        neutral: pngUrl,
-        talking: pngUrl,
-        happy: pngUrl,
-        concerned: pngUrl,
-        worried: pngUrl,
-        frustrated: pngUrl,
-        confused: pngUrl,
-        presenting: pngUrl,
-      });
-    }
+    const pngUrl = `/characters/${c.folder}/neutral.png?v=2`;
+    const expressionsMap = {
+      neutral: `/characters/${c.folder}/neutral.png?v=2`,
+      happy: `/characters/${c.folder}/happy.png?v=2`,
+      talking: `/characters/${c.folder}/talking.png?v=2`,
+      worried: `/characters/${c.folder}/worried.png?v=2`,
+      concerned: `/characters/${c.folder}/worried.png?v=2`,
+      frustrated: `/characters/${c.folder}/frustrated.png?v=2`,
+      disappointed: `/characters/${c.folder}/frustrated.png?v=2`,
+      confused: `/characters/${c.folder}/confused.png?v=2`,
+      thinking: `/characters/${c.folder}/confused.png?v=2`,
+      presenting: `/characters/${c.folder}/presenting.png?v=2`,
+    };
 
     insert.run(
       c.id,
@@ -2613,7 +2641,7 @@ export function seedInitialCharacters(db: Database.Database) {
       c.ethnicity,
       c.role,
       pngUrl,
-      expressions,
+      JSON.stringify(expressionsMap),
       now,
       now
     );

@@ -550,23 +550,41 @@ export default function ScenarioStudioModal({
       ? activeScene.steps[selectedTarget.stepIndex] || activeScene.steps[0]
       : null;
 
+  // Expression aliases map
+  const EXPRESSION_ALIASES: Record<string, string> = {
+    concerned: 'worried',
+    disappointed: 'frustrated',
+    thinking: 'confused',
+    smiling: 'happy',
+    speaking: 'talking',
+  };
+
   // Resolve photo for active character and expression
   const resolvePhoto = (
     sc: ScenarioSceneItem,
-    expression: ScenarioExpression = 'neutral',
+    expression: ScenarioExpression | string = 'neutral',
     framingOverride?: 'half_body' | 'full_body'
   ) => {
     const framing = framingOverride || sc.characterFraming || 'half_body';
-    if (sc.characterExpressions && sc.characterExpressions[expression]) {
-      let url = sc.characterExpressions[expression];
-      if (framing === 'full_body' && url.includes('-half.png')) {
-        url = url.replace('-half.png', '-full.png');
-      } else if (framing === 'half_body' && url.includes('-full.png')) {
-        url = url.replace('-full.png', '-half.png');
-      }
-      return url;
+    const norm = (EXPRESSION_ALIASES[expression] || expression) as ScenarioExpression;
+
+    let url: string | undefined = undefined;
+    if (sc.characterExpressions) {
+      url =
+        sc.characterExpressions[norm] ||
+        sc.characterExpressions[expression as ScenarioExpression] ||
+        sc.characterExpressions['neutral'];
     }
-    return sc.characterPhotoUrl;
+    if (!url) url = sc.characterPhotoUrl;
+    if (!url) return '';
+
+    if (framing === 'full_body') {
+      if (url.includes('-half.png')) url = url.replace('-half.png', '-full.png');
+      else if (url.includes('.png') && !url.includes('-full.png')) url = url.replace('.png', '-full.png');
+    } else {
+      if (url.includes('-full.png')) url = url.replace('-full.png', '-half.png').replace('-half.png', '.png');
+    }
+    return url;
   };
 
   if (!isOpen) return null;
@@ -916,11 +934,10 @@ export default function ScenarioStudioModal({
                       <div className="w-full md:w-5/12 flex justify-center md:justify-start md:pl-6 self-end z-10">
                         {pScene.showCharacter && pStep.hasCharacter && (
                           <div className="relative flex flex-col items-center justify-end select-none">
-                            <div className="absolute -bottom-2 inset-x-8 h-6 bg-black/70 blur-xl rounded-full pointer-events-none" />
                             <img
                               src={photoUrl}
                               alt={pScene.characterName}
-                              className={`w-auto object-contain drop-shadow-2xl transition-all duration-300 ${
+                              className={`w-auto object-contain object-bottom drop-shadow-2xl transition-all duration-300 ${
                                 pScene.characterFraming === 'full_body'
                                   ? 'max-h-[500px] md:max-h-[540px]'
                                   : 'max-h-[440px] md:max-h-[480px]'
@@ -1114,11 +1131,10 @@ export default function ScenarioStudioModal({
                 {/* Character cutout grounded on left */}
                 {activeScene.showCharacter && (
                   <div className="absolute bottom-0 left-8 z-10 flex flex-col items-center">
-                    <div className="absolute -bottom-1 inset-x-4 h-4 bg-black/70 blur-lg rounded-full" />
                     <img
                       src={resolvePhoto(activeScene, 'neutral')}
                       alt={activeScene.characterName}
-                      className={`w-auto object-contain drop-shadow-2xl ${
+                      className={`w-auto object-contain object-bottom drop-shadow-2xl ${
                         activeScene.characterFraming === 'full_body'
                           ? 'max-h-56'
                           : 'max-h-48'
@@ -1218,7 +1234,7 @@ export default function ScenarioStudioModal({
                       <img
                         src={resolvePhoto(activeScene, 'neutral')}
                         alt={activeScene.characterName}
-                        className="max-h-14 object-contain"
+                        className="max-h-14 object-contain object-bottom"
                       />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -1324,6 +1340,43 @@ export default function ScenarioStudioModal({
                     <option value="dialogue">💬 Dialogue</option>
                     <option value="text">🗐 Text</option>
                   </select>
+                </div>
+              </div>
+
+              {/* LIVE STAGE PREVIEW FOR THIS STEP */}
+              <div className="w-full h-52 rounded-2xl overflow-hidden relative shadow-lg bg-zinc-950 border border-zinc-200">
+                <img
+                  src={activeScene.backgroundUrl}
+                  alt="Stage Environment"
+                  className={`w-full h-full object-cover filter brightness-[0.8] ${
+                    activeScene.blurBackground ? 'blur-[3px]' : ''
+                  }`}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-black/20" />
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-zinc-950 to-transparent" />
+
+                {/* Character cutout with active expression */}
+                {activeScene.showCharacter && activeStep.hasCharacter && (
+                  <div className="absolute bottom-0 left-8 z-10 flex flex-col items-center">
+                    <img
+                      src={resolvePhoto(activeScene, activeStep.expression)}
+                      alt={activeScene.characterName}
+                      className={`w-auto object-contain object-bottom drop-shadow-2xl transition-all duration-300 ${
+                        activeScene.characterFraming === 'full_body'
+                          ? 'max-h-48'
+                          : 'max-h-44'
+                      }`}
+                      style={
+                        activeScene.characterFraming === 'full_body'
+                          ? undefined
+                          : WAIST_FADE_MASK_STYLE
+                      }
+                    />
+                  </div>
+                )}
+
+                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-bold text-white uppercase tracking-wider border border-white/20">
+                  LIVE STAGE PREVIEW • {activeStep.expression.toUpperCase()}
                 </div>
               </div>
 
@@ -1614,6 +1667,20 @@ export default function ScenarioStudioModal({
                             ))}
                           </select>
                         </div>
+
+                        {/* Change Character Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingTargetForModal('scene');
+                            setIsCharModalOpen(true);
+                          }}
+                          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-2xs cursor-pointer hover:border-indigo-300 inline-flex items-center gap-1 shrink-0 mt-4"
+                          title="Change Character"
+                        >
+                          <User className="w-3.5 h-3.5" />
+                          <span>Change Character</span>
+                        </button>
                       </div>
                     )}
                   </div>

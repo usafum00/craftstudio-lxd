@@ -142,10 +142,11 @@ export default function CharacterPickerModal({
   const handleConfirmPose = (pose: CharacterPose) => {
     if (!selectedChar) return;
     let poseUrl = selectedChar.expressions?.[pose] || selectedChar.transparentPngUrl;
-    if (selectedFraming === 'full_body' && poseUrl.includes('-half.png')) {
-      poseUrl = poseUrl.replace('-half.png', '-full.png');
-    } else if (selectedFraming === 'half_body' && poseUrl.includes('-full.png')) {
-      poseUrl = poseUrl.replace('-full.png', '-half.png');
+    if (selectedFraming === 'full_body') {
+      if (poseUrl.includes('-half.png')) poseUrl = poseUrl.replace('-half.png', '-full.png');
+      else if (poseUrl.includes('.png') && !poseUrl.includes('-full.png')) poseUrl = poseUrl.replace('.png', '-full.png');
+    } else {
+      if (poseUrl.includes('-full.png')) poseUrl = poseUrl.replace('-full.png', '-half.png').replace('-half.png', '.png');
     }
 
     // Resolve expressions dictionary with matching framing
@@ -153,10 +154,11 @@ export default function CharacterPickerModal({
     if (selectedChar.expressions) {
       for (const [k, v] of Object.entries(selectedChar.expressions)) {
         let u = v;
-        if (selectedFraming === 'full_body' && u.includes('-half.png')) {
-          u = u.replace('-half.png', '-full.png');
-        } else if (selectedFraming === 'half_body' && u.includes('-full.png')) {
-          u = u.replace('-full.png', '-half.png');
+        if (selectedFraming === 'full_body') {
+          if (u.includes('-half.png')) u = u.replace('-half.png', '-full.png');
+          else if (u.includes('.png') && !u.includes('-full.png')) u = u.replace('.png', '-full.png');
+        } else {
+          if (u.includes('-full.png')) u = u.replace('-full.png', '-half.png').replace('-half.png', '.png');
         }
         resolvedExpressions[k] = u;
       }
@@ -348,11 +350,13 @@ export default function CharacterPickerModal({
 
                 {/* Visible, High-Contrast Sparkle Button */}
                 <button
+                  type="button"
                   onClick={() => setShowAiGenerator((prev) => !prev)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors cursor-pointer"
+                  style={{ backgroundColor: '#4f46e5', color: '#ffffff' }}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 shadow-sm cursor-pointer transition-colors"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                  <span>✨ Generate Photo Cutout</span>
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span className="text-white font-semibold">✨ Generate Photo Cutout</span>
                 </button>
               </>
             )}
@@ -471,12 +475,16 @@ export default function CharacterPickerModal({
                 <img
                   src={(() => {
                     let u = selectedChar.expressions?.[activePose] || selectedChar.transparentPngUrl;
-                    if (selectedFraming === 'full_body' && u.includes('-half.png')) u = u.replace('-half.png', '-full.png');
-                    else if (selectedFraming === 'half_body' && u.includes('-full.png')) u = u.replace('-full.png', '-half.png');
+                    if (selectedFraming === 'full_body') {
+                      if (u.includes('-half.png')) u = u.replace('-half.png', '-full.png');
+                      else if (u.includes('.png') && !u.includes('-full.png')) u = u.replace('.png', '-full.png');
+                    } else {
+                      if (u.includes('-full.png')) u = u.replace('-full.png', '-half.png').replace('-half.png', '.png');
+                    }
                     return u;
                   })()}
                   alt={selectedChar.name}
-                  className="max-h-60 object-contain"
+                  className="max-h-60 object-contain object-bottom drop-shadow-md"
                 />
               </div>
 
@@ -540,10 +548,11 @@ export default function CharacterPickerModal({
                 {POSE_METADATA.map((p) => {
                   const isCurrent = activePose === p.id;
                   let poseUrl = selectedChar.expressions?.[p.id] || selectedChar.transparentPngUrl;
-                  if (selectedFraming === 'full_body' && poseUrl.includes('-half.png')) {
-                    poseUrl = poseUrl.replace('-half.png', '-full.png');
-                  } else if (selectedFraming === 'half_body' && poseUrl.includes('-full.png')) {
-                    poseUrl = poseUrl.replace('-full.png', '-half.png');
+                  if (selectedFraming === 'full_body') {
+                    if (poseUrl.includes('-half.png')) poseUrl = poseUrl.replace('-half.png', '-full.png');
+                    else if (poseUrl.includes('.png') && !poseUrl.includes('-full.png')) poseUrl = poseUrl.replace('.png', '-full.png');
+                  } else {
+                    if (poseUrl.includes('-full.png')) poseUrl = poseUrl.replace('-full.png', '-half.png').replace('-half.png', '.png');
                   }
 
                   return (
@@ -563,7 +572,7 @@ export default function CharacterPickerModal({
                         <img
                           src={poseUrl}
                           alt={p.label}
-                          className="max-h-16 object-contain"
+                          className="max-h-16 object-contain object-bottom"
                         />
                       </div>
 
@@ -758,7 +767,7 @@ export default function CharacterPickerModal({
                         />
 
                         {/* Articulate Rise Hover Overlay (Only visible on hover with centered pill button) */}
-                        <div className="absolute inset-0 bg-zinc-800/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 backdrop-blur-[1px] flex items-center justify-center p-4">
+                        <div className="character-select-scrim absolute inset-0 bg-zinc-800/60 backdrop-blur-[1px] flex items-center justify-center p-4">
                           <span className="border-2 border-white text-white bg-zinc-900/60 backdrop-blur-sm px-6 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase shadow-md transform group-hover:scale-105 transition-transform">
                             SELECT
                           </span>

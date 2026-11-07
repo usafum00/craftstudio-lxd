@@ -1297,11 +1297,26 @@ export function InteractiveBlock({
     const isDialogue = activeScene.type === 'dialogue';
     const activeExpression = currentExpressionOverride || activeScene.expression || 'neutral';
     const characterRole = (content.characterRole as string) || '';
-    const customPhotoUrl = (content.characterPhotoUrl as string) || '';
-    const characterExpressions = (content.characterExpressions as Record<string, string>) || null;
+    const rawScene = activeScene as unknown as Record<string, unknown>;
+    const customPhotoUrl = (rawScene?.characterPhotoUrl as string) || (content.characterPhotoUrl as string) || '';
+    
+    // Expression aliases
+    const EXPRESSION_ALIASES: Record<string, string> = {
+      concerned: 'worried',
+      disappointed: 'frustrated',
+      thinking: 'confused',
+      smiling: 'happy',
+      speaking: 'talking',
+    };
+    const normExpr = EXPRESSION_ALIASES[activeExpression] || activeExpression;
+    const characterExpressions =
+      (rawScene?.characterExpressions as Record<string, string>) ||
+      (content.characterExpressions as Record<string, string>) ||
+      null;
+
     const resolvedPhotoUrl =
-      characterExpressions && characterExpressions[activeExpression]
-        ? characterExpressions[activeExpression]
+      characterExpressions && (characterExpressions[normExpr] || characterExpressions[activeExpression] || characterExpressions['neutral'])
+        ? characterExpressions[normExpr] || characterExpressions[activeExpression] || characterExpressions['neutral']
         : customPhotoUrl;
     const scenarioBgUrl = scenarioBg || SCENARIO_ENVIRONMENTS[0].url;
     const activeSceneIndex = Math.max(0, scenarioScenes.findIndex((s) => s.id === activeScene.id));
